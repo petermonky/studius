@@ -22,6 +22,6 @@ router.use("/files", require("./fileUpload"));
 router.use("/forum", require("./forum"));
 
 // dashboard routes
-router.use("/dashboard", require("./routes/dashboard"));
+router.use("/dashboard", require("./dashboard"));
 
 module.exports = router;
