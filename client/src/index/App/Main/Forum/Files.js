@@ -33,7 +33,7 @@ const Files = ({ match, setNotification, forumid }) => {
     event.preventDefault();
     try {
       console.log(fileData);
-      const response = await fetch("http://localhost:3000/forum/file", {
+      const response = await fetch("/api/forum/file", {
         method: "POST",
         headers: {
           token: localStorage.token,
@@ -155,18 +155,18 @@ return (
       <ExternalInfo page="fileDownloader" />
 
       <div className="row">
-        <div className="col text-center">
+        <div className="text-center col">
           <h2>File Downloader with progress bar in react</h2>
-          <div className="row mt-3">
+          <div className="mt-3 row">
             {files.map((file, idx) => (
               <div className="col" key={idx}>
                 <div className="card ">
                   <div className="card-body" key={idx}>
-                    <img className="card-img-top mb-3" src={file.thumb} />
+                    <img className="mb-3 card-img-top" src={file.thumb} />
                     <h5 className="card-title">{file.name}</h5>
 
                     <a
-                      className="btn btn-primary cursor-pointer text-white"
+                      className="text-white cursor-pointer btn btn-primary"
                       onClick={() => download(file)}
                     >
                       Download <GetAppIcon />

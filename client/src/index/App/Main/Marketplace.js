@@ -14,7 +14,7 @@ const Marketplace = ({
 
   const getProfiles = async () => {
     try {
-      const response = await fetch("http://localhost:3000/marketplace/", {
+      const response = await fetch("/api/marketplace/", {
         method: "GET",
         headers: { token: localStorage.token },
       });
@@ -71,7 +71,7 @@ const Marketplace = ({
 
   const handleInitialiseCredentials = async (tutorProfileId) => {
     try {
-      const response = await fetch("http://localhost:3000/files/credentials/", {
+      const response = await fetch("/api/files/credentials/", {
         method: "GET",
         headers: { token: localStorage.token, credentialsId: tutorProfileId },
         responseType: "blob",

@@ -38,7 +38,7 @@ const Engaged = ({ match, userInformation }) => {
   // get the forums
   const getEngaged = async () => {
     try {
-      const response = await fetch("http://localhost:3000/dashboard/engaged", {
+      const response = await fetch("/api/dashboard/engaged", {
         method: "GET",
         headers: { token: localStorage.token },
       });

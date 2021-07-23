@@ -6,7 +6,7 @@ import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+// import Autocomplete from "@material-ui/lab/Autocomplete";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -58,30 +58,30 @@ const useStyles = makeStyles((theme) => ({
 const Profile = ({ setNotification }) => {
   const classes = useStyles();
 
-  const [inputInstitution, setInputInstitution] = useState("");
+  // const [inputInstitution, setInputInstitution] = useState("");
 
-  const [listOfInstitutions, setListOfInstitutions] = useState([]);
+  // const [listOfInstitutions, setListOfInstitutions] = useState([]);
 
-  const handleListOfInstitutions = async (institution) => {
-    setInputInstitution(institution);
+  // const handleListOfInstitutions = async (institution) => {
+  //   setInputInstitution(institution);
 
-    const response = await fetch(
-      `http://universities.hipolabs.com/search?name=${inputInstitution}`,
-      {
-        method: "GET",
-      }
-    );
+  //   const response = await fetch(
+  //     `http://universities.hipolabs.com/search?name=${inputInstitution}`,
+  //     {
+  //       method: "GET",
+  //     }
+  //   );
 
-    const parseRes = await response.json();
+  //   const parseRes = await response.json();
 
-    setListOfInstitutions(parseRes.map((institution) => institution.name));
-  };
+  //   setListOfInstitutions(parseRes.map((institution) => institution.name));
+  // };
 
   const [inputs, setInputs] = useState({
     subjects: { 0: "" },
     rate: "",
-    fromTime: null,
-    toTime: null,
+    fromTime: moment("00:00", "HH:mm"),
+    toTime: moment("00:00", "HH:mm"),
     institution: "",
     description: "",
     ispublic: false,
@@ -91,7 +91,7 @@ const Profile = ({ setNotification }) => {
 
   const getProfile = async () => {
     try {
-      const responseProfile = await fetch("http://localhost:3000/profile/", {
+      const responseProfile = await fetch("/api/profile/", {
         method: "GET",
         headers: { token: localStorage.token },
       });
@@ -118,13 +118,10 @@ const Profile = ({ setNotification }) => {
 
       // probably the nastiest piece of code i've ever written
       try {
-        const responseCredential = await fetch(
-          "http://localhost:3000/files/credentials/",
-          {
-            method: "GET",
-            headers: { token: localStorage.token },
-          }
-        );
+        const responseCredential = await fetch("/api/files/credentials/", {
+          method: "GET",
+          headers: { token: localStorage.token },
+        });
 
         if ((await responseCredential.json()) === false) {
           setHasCredentialFile(false);
@@ -190,7 +187,7 @@ const Profile = ({ setNotification }) => {
     formData.append("credential", event.target.files[0]);
 
     try {
-      const response = await fetch("http://localhost:3000/files/credentials/", {
+      const response = await fetch("/api/files/credentials/", {
         method: "PUT",
         headers: { token: localStorage.token },
         body: formData,
@@ -217,7 +214,7 @@ const Profile = ({ setNotification }) => {
 
   const handleFileView = async () => {
     try {
-      const response = await fetch("http://localhost:3000/files/credentials/", {
+      const response = await fetch("/api/files/credentials/", {
         method: "GET",
         headers: { token: localStorage.token },
         responseType: "blob",
@@ -237,7 +234,7 @@ const Profile = ({ setNotification }) => {
 
   const handleFileRemove = async () => {
     try {
-      const response = await fetch("http://localhost:3000/files/credentials/", {
+      const response = await fetch("/api/files/credentials/", {
         method: "DELETE",
         headers: { token: localStorage.token },
       });
@@ -300,7 +297,7 @@ const Profile = ({ setNotification }) => {
     };
 
     try {
-      const response = await fetch("http://localhost:3000/profile/", {
+      const response = await fetch("/api/profile/", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -434,7 +431,7 @@ const Profile = ({ setNotification }) => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <Autocomplete
                 id="education"
                 variant="outlined"
@@ -457,6 +454,19 @@ const Profile = ({ setNotification }) => {
                     variant="outlined"
                   />
                 )}
+              />
+            </Grid> */}
+            <Grid item xs={12}>
+              <TextField
+                required
+                id="institution"
+                label="Institution"
+                variant="outlined"
+                name="institution"
+                value={inputs.institution}
+                multiline
+                onChange={handleInputs}
+                fullWidth
               />
             </Grid>
             <Grid item xs={12}>

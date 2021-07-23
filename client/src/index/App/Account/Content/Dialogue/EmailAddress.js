@@ -34,7 +34,7 @@ const EmailAddress = ({
     try {
       const body = { email: input };
 
-      const response = await fetch("http://localhost:3000/account/email", {
+      const response = await fetch("/api/account/email", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

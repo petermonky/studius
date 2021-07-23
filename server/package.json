@@ -16,6 +16,7 @@
     "pg": "^8.6.0"
   },
   "scripts": {
-    "start": "nodemon index"
+    "dev": "nodemon index",
+    "start": "node index"
   }
 }

@@ -77,7 +77,7 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
         date: new Date().toISOString(),
       };
 
-      const response = await fetch("http://localhost:3000/forum/qna/question", {
+      const response = await fetch("/api/forum/qna/question", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +114,7 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
   const answerQuestion = (answer, question) => async () => {
     handleClose();
     try {
-      const response = await fetch("http://localhost:3000/forum/qna/answer", {
+      const response = await fetch("/api/forum/qna/answer", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +151,7 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
   // both users
   const displayQnA = async () => {
     try {
-      const response = await fetch("http://localhost:3000/forum/qna", {
+      const response = await fetch("/api/forum/qna", {
         method: "GET",
         headers: {
           token: localStorage.token,
@@ -174,7 +174,7 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
 
   const deleteQuestion = (id) => async () => {
     try {
-      const response = await fetch(`http://localhost:3000/forum/qna`, {
+      const response = await fetch("/api/forum/qna", {
         method: "DELETE",
         headers: {
           token: localStorage.token,

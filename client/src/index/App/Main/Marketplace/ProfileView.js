@@ -97,7 +97,7 @@ const ProfileView = ({
     try {
       const body = { OUID: profile.id, subject: contractSubject };
 
-      const response = await fetch("http://localhost:3000/forum/", {
+      const response = await fetch("/api/forum", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

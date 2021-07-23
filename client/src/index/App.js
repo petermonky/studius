@@ -55,7 +55,7 @@ const App = () => {
 
   const handleAuth = async () => {
     try {
-      const response = await fetch("http://localhost:3000/auth/verify", {
+      const response = await fetch("/api/auth/verify", {
         method: "POST",
         headers: { token: localStorage.token },
       });

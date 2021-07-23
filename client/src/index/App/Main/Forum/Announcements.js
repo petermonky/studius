@@ -60,20 +60,17 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
         date: new Date().toISOString(),
       };
 
-      const response = await fetch(
-        "http://localhost:3000/forum/announcements",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            token: localStorage.token,
-          },
-          body: JSON.stringify({
-            ...announcementData,
-            forumid,
-          }),
-        }
-      );
+      const response = await fetch("/api/forum/announcements", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          token: localStorage.token,
+        },
+        body: JSON.stringify({
+          ...announcementData,
+          forumid,
+        }),
+      });
 
       const parseRes = await response.json();
 
@@ -102,17 +99,14 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
   // both users
   const displayAnnoucements = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:3000/forum/announcements",
-        {
-          method: "GET",
-          headers: {
-            token: localStorage.token,
-            "Content-Type": "application/json",
-            forumid: forumid,
-          },
-        }
-      );
+      const response = await fetch("/api/forum/announcements", {
+        method: "GET",
+        headers: {
+          token: localStorage.token,
+          "Content-Type": "application/json",
+          forumid: forumid,
+        },
+      });
 
       const parseRes = await response.json();
 
@@ -129,17 +123,14 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
   const deleteAnnoucement = (id) => async () => {
     try {
       console.log(title, body);
-      const response = await fetch(
-        `http://localhost:3000/forum/announcements`,
-        {
-          method: "DELETE",
-          headers: {
-            token: localStorage.token,
-            "Content-Type": "application/json",
-            id,
-          },
-        }
-      );
+      const response = await fetch("/api/forum/announcements", {
+        method: "DELETE",
+        headers: {
+          token: localStorage.token,
+          "Content-Type": "application/json",
+          id,
+        },
+      });
 
       const parseRes = await response.json();
 

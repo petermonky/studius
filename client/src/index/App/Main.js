@@ -32,7 +32,7 @@ const Main = ({ match, setAuth, setNotification }) => {
 
   const getProfile = async () => {
     try {
-      const response = await fetch("http://localhost:3000/main/", {
+      const response = await fetch("/api/main/", {
         method: "GET",
         headers: { token: localStorage.token },
       });

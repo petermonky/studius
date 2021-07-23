@@ -30,7 +30,7 @@ const FirstName = ({
     try {
       const body = { firstname: input };
 
-      const response = await fetch("http://localhost:3000/account/firstname", {
+      const response = await fetch("/api/account/firstname", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
