@@ -45,11 +45,9 @@ CREATE TABLE forums(
 
 --create credentials table
 CREATE TABLE credentials(
-    id uuid PRIMARY KEY,
-    filename VARCHAR UNIQUE NOT NULL,
-    filepath VARCHAR NOT NULL,
-    mimetype VARCHAR NOT NULL,
-    size BIGINT NOT NULL
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tutorid uuid NOT NULL,
+    aws_name VARCHAR UNIQUE NOT NULL
 );
 
 CREATE TABLE announcements(
