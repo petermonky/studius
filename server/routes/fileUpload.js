@@ -3,11 +3,12 @@ const authorisation = require("../middleware/authorisation");
 const credentials = require("../middleware/credentials");
 const multer = require("multer");
 const fs = require("fs");
+const os = require("os");
 const pool = require("../db");
 
 const { uploadFile, getFileStream, deleteFile } = require("../utils/s3");
 
-const upload = multer({ dest: "./files/credentials" });
+const upload = multer({ dest: os.tmpdir() });
 
 router.get("/credentials", [authorisation, credentials], (req, res) => {
   try {
@@ -25,6 +26,7 @@ router.post(
   [authorisation, upload.single("credentials")],
   async (req, res) => {
     try {
+      console.log(req.file);
       const result = await uploadFile(req.file);
 
       const fileRetrieve = await pool.query(
@@ -43,11 +45,11 @@ router.post(
         [req.user.id, result.key]
       );
 
-      fs.unlink(`./files/credentials/${result.key}`, (error) => {
-        if (error) {
-          console.error(error);
-        }
-      });
+      // fs.unlink(`./files/credentials/${result.key}`, (error) => {
+      //   if (error) {
+      //     console.error(error);
+      //   }
+      // });
 
       res.json({ status: true, message: "Upload successful!" });
     } catch (error) {

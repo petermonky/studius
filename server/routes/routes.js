@@ -16,7 +16,7 @@ router.use("/profile", require("./profile"));
 router.use("/account", require("./account"));
 
 // file route
-// router.use("/files", require("./fileUpload"));
+router.use("/files", require("./fileUpload"));
 // under construction
 
 // forum route
