@@ -34,6 +34,8 @@ const useStyles = makeStyles((theme) => ({
 const Login = ({ setAuth, setNotification }) => {
   const classes = useStyles();
 
+  const [loading, setLoading] = useState(false);
+
   const [inputs, setInputs] = useState({
     email: "",
     password: "",
@@ -47,6 +49,7 @@ const Login = ({ setAuth, setNotification }) => {
 
   const onSubmitForm = async (event) => {
     event.preventDefault();
+    setLoading(true);
 
     try {
       const body = { email, password };
@@ -75,12 +78,14 @@ const Login = ({ setAuth, setNotification }) => {
         });
         setAuth(false);
       }
+      setLoading(false);
     } catch (error) {
       setNotification({
         open: true,
         severity: "error",
         message: error.message,
       });
+      setLoading(false);
       console.log(error.message);
     }
   };
@@ -128,8 +133,9 @@ const Login = ({ setAuth, setNotification }) => {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={loading}
           >
-            Log in
+            {!loading ? "Log in" : "Loading..."}
           </Button>
           <Grid container>
             <Grid item xs justify="center">

@@ -14,10 +14,14 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { Grid } from "@material-ui/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import Loading from "../../../shared/Loading";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   root: {
     minWidth: 275,
+  },
+  noData: {
+    marginTop: theme.spacing(40),
   },
   bullet: {
     display: "inline-block",
@@ -27,15 +31,14 @@ const useStyles = makeStyles({
   title: {
     fontSize: 14,
   },
-  pos: {
-    marginBottom: 12,
-  },
-});
+}));
 
 const Annoucements = ({ userInformation, setNotification, forumid }) => {
   const classes = useStyles();
 
   dayjs.extend(relativeTime);
+
+  const [loading, setLoading] = useState(true);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -99,6 +102,8 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
   // both users
   const displayAnnoucements = async () => {
     try {
+      setLoading(true);
+
       const response = await fetch("/api/forum/announcements", {
         method: "GET",
         headers: {
@@ -110,7 +115,8 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
 
       const parseRes = await response.json();
 
-      return setAnnouncements(parseRes || []);
+      setAnnouncements(parseRes || []);
+      setLoading(false);
     } catch (error) {
       console.error(error.message);
     }
@@ -219,54 +225,60 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
       </div>
 
       <div>
-        {announcements.length === 0 ? (
-          <Box display="flex" justifyContent="center" m={2}>
-            <Typography variant="h4"> No announcements yet!</Typography>
-          </Box>
-        ) : (
-          announcements.map((announcement) => (
-            <div key={announcement.id}>
-              <Card className={classes.root}>
-                <CardContent>
-                  <Typography
-                    className={classes.title}
-                    color="textSecondary"
-                    gutterBottom
-                  >
-                    {`${dayjs(announcement.date).format("DD/MM/YYYY")} (${dayjs(
-                      announcement.date
-                    ).fromNow()})`}
-                  </Typography>
-                  <Grid container wrap="nowrap" spacing={0}>
-                    <Typography variant="h5" component="h2">
-                      {announcement.title}
+        {!loading ? (
+          announcements.length === 0 ? (
+            <Box display="flex" justifyContent="center" m={2}>
+              <Typography variant="h4"> No announcements yet!</Typography>
+            </Box>
+          ) : (
+            announcements.map((announcement) => (
+              <div key={announcement.id}>
+                <Card className={classes.root}>
+                  <CardContent>
+                    <Typography
+                      className={classes.title}
+                      color="textSecondary"
+                      gutterBottom
+                    >
+                      {`${dayjs(announcement.date).format(
+                        "DD/MM/YYYY"
+                      )} (${dayjs(announcement.date).fromNow()})`}
                     </Typography>
-                  </Grid>
-                  <Grid container wrap="nowrap" spacing={0}>
-                    <Typography variant="body2" component="p">
-                      {announcement.body}
-                    </Typography>
-                  </Grid>
-                </CardContent>
-                {userInformation.type === "Tutor" ? (
-                  <Box display="flex" flexDirection="row-reverse">
-                    <CardActions>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        style={{ backgroundColor: "#CC0000", color: "white" }}
-                        onClick={deleteAnnoucement(announcement.id)}
-                      >
-                        Delete
-                      </Button>
-                    </CardActions>
-                  </Box>
-                ) : null}
-              </Card>
+                    <Grid container wrap="nowrap" spacing={0}>
+                      <Typography variant="h5" component="h2">
+                        {announcement.title}
+                      </Typography>
+                    </Grid>
+                    <Grid container wrap="nowrap" spacing={0}>
+                      <Typography variant="body2" component="p">
+                        {announcement.body}
+                      </Typography>
+                    </Grid>
+                  </CardContent>
+                  {userInformation.type === "Tutor" ? (
+                    <Box display="flex" flexDirection="row-reverse">
+                      <CardActions>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          style={{ backgroundColor: "#CC0000", color: "white" }}
+                          onClick={deleteAnnoucement(announcement.id)}
+                        >
+                          Delete
+                        </Button>
+                      </CardActions>
+                    </Box>
+                  ) : null}
+                </Card>
 
-              <br />
-            </div>
-          ))
+                <br />
+              </div>
+            ))
+          )
+        ) : (
+          <div className={classes.noData}>
+            <Loading />
+          </div>
         )}
       </div>
     </>

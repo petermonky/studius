@@ -29,6 +29,8 @@ const useStyles = makeStyles((theme) => ({
 const Content = ({ match, ...props }) => {
   const classes = useStyles();
 
+  const [loading, setLoading] = useState(true);
+
   const [accountInformation, setAccountInformation] = useState({
     firstname: "",
     lastname: "",
@@ -38,6 +40,8 @@ const Content = ({ match, ...props }) => {
 
   const getAccountInformation = async () => {
     try {
+      setLoading(true);
+
       const response = await fetch("/api/account", {
         method: "GET",
         headers: { token: localStorage.token },
@@ -46,7 +50,9 @@ const Content = ({ match, ...props }) => {
       const parseRes = await response.json();
 
       setAccountInformation({ ...parseRes, password: "********" });
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error(error.message);
     }
   };
@@ -87,6 +93,7 @@ const Content = ({ match, ...props }) => {
               path={`${match.url}/account-information`}
               render={() => (
                 <AccountInformation
+                  loading={loading}
                   accountInformation={accountInformation}
                   handleDialogueOpen={handleDialogueOpen}
                 />

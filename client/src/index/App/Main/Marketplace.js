@@ -10,10 +10,14 @@ const Marketplace = ({
   setAppBarTitle,
   userInformation,
 }) => {
+  const [loading, setLoading] = useState(true);
+
   const [profiles, setProfiles] = useState([]);
 
   const getProfiles = async () => {
     try {
+      setLoading(true);
+
       const response = await fetch("/api/marketplace/", {
         method: "GET",
         headers: { token: localStorage.token },
@@ -22,7 +26,9 @@ const Marketplace = ({
       const parseRes = await response.json();
 
       setProfiles([...parseRes]);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error(error.message);
     }
   };
@@ -102,6 +108,7 @@ const Marketplace = ({
           render={(props) => (
             <Profiles
               {...props}
+              loading={loading}
               profiles={profiles}
               handleProfileOpen={handleProfileOpen}
             />

@@ -9,10 +9,11 @@ import Typography from "@material-ui/core/Typography";
 import { Link as RouterLink } from "react-router-dom";
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
+import Loading from "../../../shared/Loading";
 
 const useStyles = makeStyles((theme) => ({
   noData: {
-    paddingTop: theme.spacing(50),
+    paddingTop: theme.spacing(45),
   },
   root: {
     flexGrow: 1,
@@ -33,10 +34,14 @@ const defaultProps = {
 const Engaged = ({ match, userInformation }) => {
   const classes = useStyles();
 
+  const [loading, setLoading] = useState(true);
+
   const [engaged, setEngaged] = useState([]);
 
   // get the forums
   const getEngaged = async () => {
+    setLoading(true);
+
     try {
       const response = await fetch("/api/dashboard/engaged", {
         method: "GET",
@@ -44,8 +49,10 @@ const Engaged = ({ match, userInformation }) => {
       });
 
       const parseRes = await response.json();
-      return setEngaged(parseRes.engaged || []);
+      setEngaged(parseRes.engaged || []);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error(error.message);
     }
   };
@@ -54,54 +61,63 @@ const Engaged = ({ match, userInformation }) => {
     getEngaged();
   }, []);
 
-  return engaged.length === 0 ? (
-    <Typography align="center" className={classes.noData} variant="h5">
-      <MaterialLink component={RouterLink} to={`/main/marketplace`}>
-        Meet a{" "}
-        {userInformation.type === "Tutor"
-          ? "student"
-          : userInformation.type === "Student"
-          ? "tutor"
-          : ""}
-      </MaterialLink>{" "}
-      to get started!
-    </Typography>
+  return !loading ? (
+    engaged.length === 0 ? (
+      <Typography align="center" className={classes.noData} variant="h5">
+        <MaterialLink component={RouterLink} to={`/main/marketplace`}>
+          Meet a{" "}
+          {userInformation.type === "Tutor"
+            ? "student"
+            : userInformation.type === "Student"
+            ? "tutor"
+            : ""}
+        </MaterialLink>{" "}
+        to get started!
+      </Typography>
+    ) : (
+      <>
+        <Box display="flex" m={1}>
+          <Grid direction="row" container spacing={2}>
+            {engaged.map((item, index) => (
+              <Grid item xs={8} sm={3} key={index}>
+                <Box borderRadius={5} {...defaultProps}>
+                  <Card className={classes.root}>
+                    <CardActionArea
+                      className={classes.root}
+                      component={RouterLink}
+                      to={`forum/${item.split('"')[7]}/${
+                        userInformation.type === "Student"
+                          ? item.split('"')[1]
+                          : item.split('"')[5]
+                      }/announcements`}
+                    >
+                      <CardContent>
+                        <Typography variant="h5" component="h2">
+                          {item.split('"')[1]}
+                        </Typography>
+                        <Typography
+                          className={classes.pos}
+                          color="textSecondary"
+                        >
+                          {userInformation.type === "Student"
+                            ? "Tutor's "
+                            : "Student's"}{" "}
+                          name: {item.split('"')[5]}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      </>
+    )
   ) : (
-    <>
-      <Box display="flex" m={1}>
-        <Grid direction="row" container spacing={2}>
-          {engaged.map((item, index) => (
-            <Grid item xs={8} sm={3} key={index}>
-              <Box borderRadius={5} {...defaultProps}>
-                <Card className={classes.root}>
-                  <CardActionArea
-                    className={classes.root}
-                    component={RouterLink}
-                    to={`forum/${item.split('"')[7]}/${
-                      userInformation.type === "Student"
-                        ? item.split('"')[1]
-                        : item.split('"')[5]
-                    }/announcements`}
-                  >
-                    <CardContent>
-                      <Typography variant="h5" component="h2">
-                        {item.split('"')[1]}
-                      </Typography>
-                      <Typography className={classes.pos} color="textSecondary">
-                        {userInformation.type === "Student"
-                          ? "Tutor's "
-                          : "Student's"}{" "}
-                        name: {item.split('"')[5]}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    </>
+    <div className={classes.noData}>
+      <Loading />
+    </div>
   );
 };
 

@@ -23,7 +23,6 @@ const Loading = () => {
         direction="column"
         justify="center"
         alignItems="center"
-        style={{ minHeight: "100vh" }}
       >
         <Grid item xs={12}>
           <CircularProgress />

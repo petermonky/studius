@@ -14,10 +14,14 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { Grid } from "@material-ui/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import Loading from "../../../shared/Loading";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   root: {
     minWidth: 275,
+  },
+  noData: {
+    marginTop: theme.spacing(40),
   },
   bullet: {
     display: "inline-block",
@@ -35,12 +39,14 @@ const useStyles = makeStyles({
     fontSize: 16,
     paddingTop: "5px",
   },
-});
+}));
 
 const QnA = ({ userInformation, setNotification, forumid }) => {
   const classes = useStyles();
 
   dayjs.extend(relativeTime);
+
+  const [loading, setLoading] = useState(true);
 
   const [qnas, setQnas] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -155,6 +161,8 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
   // both users
   const displayQnA = async () => {
     try {
+      setLoading(true);
+
       const response = await fetch("/api/forum/qna", {
         method: "GET",
         headers: {
@@ -167,7 +175,9 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
       const parseRes = await response.json();
 
       setQnas(parseRes || []);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error(error.message);
     }
   };
@@ -262,91 +272,97 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
         </div>
 
         <div>
-          {qnas.length === 0 ? (
-            <Box display="flex" justifyContent="center" m={2}>
-              <Typography variant="h4"> No questions yet!</Typography>
-            </Box>
-          ) : (
-            qnas.map((qna) => (
-              <div key={qna.id}>
-                <Card className={classes.root} variant="elevation">
-                  <CardContent>
-                    <Typography
-                      className={classes.title}
-                      color="textSecondary"
-                      gutterBottom
-                    >
-                      {`${dayjs(qna.dateasked).format("DD/MM/YYYY")} (${dayjs(
-                        qna.dateasked
-                      ).fromNow()})`}
-                    </Typography>
-
-                    <Grid container wrap="nowrap" spacing={0}>
-                      <Typography variant="h6" component="h2">
-                        {qna.question}
+          {!loading ? (
+            qnas.length === 0 ? (
+              <Box display="flex" justifyContent="center" m={2}>
+                <Typography variant="h4"> No questions yet!</Typography>
+              </Box>
+            ) : (
+              qnas.map((qna) => (
+                <div key={qna.id}>
+                  <Card className={classes.root} variant="elevation">
+                    <CardContent>
+                      <Typography
+                        className={classes.title}
+                        color="textSecondary"
+                        gutterBottom
+                      >
+                        {`${dayjs(qna.dateasked).format("DD/MM/YYYY")} (${dayjs(
+                          qna.dateasked
+                        ).fromNow()})`}
                       </Typography>
-                    </Grid>
-                    {qna.answer && (
-                      <>
-                        <Grid container wrap="nowrap" spacing={0}>
-                          <Typography
-                            variant="h7"
-                            component="p"
-                            className={classes.footer}
-                          >
-                            {qna.answer}
-                          </Typography>
-                        </Grid>
 
-                        <Typography
-                          color="textSecondary"
-                          gutterBottom
-                          className={classes.date}
-                        >
-                          {`${dayjs(qna.dateresponded).format(
-                            "DD/MM/YYYY"
-                          )} (${dayjs(qna.dateresponded).fromNow()})`}
+                      <Grid container wrap="nowrap" spacing={0}>
+                        <Typography variant="h6" component="h2">
+                          {qna.question}
                         </Typography>
-                      </>
-                    )}
-                  </CardContent>
+                      </Grid>
+                      {qna.answer && (
+                        <>
+                          <Grid container wrap="nowrap" spacing={0}>
+                            <Typography
+                              variant="h7"
+                              component="p"
+                              className={classes.footer}
+                            >
+                              {qna.answer}
+                            </Typography>
+                          </Grid>
 
-                  {userInformation.type === "Student" ? (
-                    <Box display="flex" flexDirection="row-reverse">
-                      <CardActions>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          style={{
-                            backgroundColor: "#CC0000",
-                            color: "white",
-                          }}
-                          onClick={deleteQuestion(qna.id)}
-                        >
-                          Delete
-                        </Button>
-                      </CardActions>
-                    </Box>
-                  ) : (
-                    <>
+                          <Typography
+                            color="textSecondary"
+                            gutterBottom
+                            className={classes.date}
+                          >
+                            {`${dayjs(qna.dateresponded).format(
+                              "DD/MM/YYYY"
+                            )} (${dayjs(qna.dateresponded).fromNow()})`}
+                          </Typography>
+                        </>
+                      )}
+                    </CardContent>
+
+                    {userInformation.type === "Student" ? (
                       <Box display="flex" flexDirection="row-reverse">
                         <CardActions>
                           <Button
+                            size="small"
                             variant="contained"
-                            colour="primary"
-                            onClick={handleAnsDiagOpen(qna.question, qna.id)}
+                            style={{
+                              backgroundColor: "#CC0000",
+                              color: "white",
+                            }}
+                            onClick={deleteQuestion(qna.id)}
                           >
-                            {qna.answer === null ? "answer" : "edit"}
+                            Delete
                           </Button>
                         </CardActions>
                       </Box>
-                    </>
-                  )}
-                </Card>
+                    ) : (
+                      <>
+                        <Box display="flex" flexDirection="row-reverse">
+                          <CardActions>
+                            <Button
+                              variant="contained"
+                              colour="primary"
+                              onClick={handleAnsDiagOpen(qna.question, qna.id)}
+                            >
+                              {qna.answer === null ? "answer" : "edit"}
+                            </Button>
+                          </CardActions>
+                        </Box>
+                      </>
+                    )}
+                  </Card>
 
-                <br />
-              </div>
-            ))
+                  <br />
+                </div>
+              ))
+            )
+          ) : (
+            <div className={classes.noData}>
+              <Loading />{" "}
+            </div>
           )}
         </div>
 
