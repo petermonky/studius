@@ -87,10 +87,94 @@ const Profile = ({ setNotification }) => {
     ispublic: false,
   });
 
-  const [hasCredentialFile, setHasCredentialFile] = useState(false);
+  const [credentials, setCredentials] = useState(null);
+  const [credentialsURL, setCredentialsURL] = useState("");
+
+  const handleFileUpload = async () => {
+    try {
+      if (!credentials) {
+        return setNotification({
+          open: true,
+          severity: "error",
+          message: "No credentials selected!",
+        });
+      }
+
+      const formData = new FormData();
+      formData.append("credentials", credentials);
+
+      const response = await fetch("/api/files/credentials", {
+        method: "POST",
+        headers: { token: localStorage.token },
+        body: formData,
+      });
+
+      const parseRes = await response.json();
+
+      if (parseRes.status === true) {
+        setNotification({
+          open: true,
+          severity: "success",
+          message: parseRes.message,
+        });
+
+        const file = new Blob([credentials], { type: "application/pdf" });
+
+        const fileURL = URL.createObjectURL(file);
+
+        setCredentials(null);
+        setCredentialsURL(fileURL);
+      } else {
+        setNotification({
+          open: true,
+          severity: "error",
+          message: parseRes.message,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleFileView = () => {
+    window.open(credentialsURL);
+  };
+
+  const handleFileRemove = async () => {
+    try {
+      const response = await fetch("/api/files/credentials", {
+        method: "DELETE",
+        headers: { token: localStorage.token },
+      });
+
+      const parseRes = await response.json();
+
+      if (parseRes.status === true) {
+        setNotification({
+          open: true,
+          severity: "success",
+          message: parseRes.message,
+        });
+      } else {
+        setNotification({
+          open: true,
+          severity: "error",
+          message: parseRes.message,
+        });
+      }
+      setCredentialsURL("");
+    } catch (error) {
+      setNotification({
+        open: true,
+        severity: "error",
+        message: error,
+      });
+    }
+  };
 
   const getProfile = async () => {
     try {
+      // response of profile details
       const responseProfile = await fetch("/api/profile/", {
         method: "GET",
         headers: { token: localStorage.token },
@@ -116,19 +200,27 @@ const Profile = ({ setNotification }) => {
         ispublic: ispublic || false,
       });
 
-      // probably the nastiest piece of code i've ever written
-      try {
-        const responseCredential = await fetch("/api/files/credentials/", {
-          method: "GET",
-          headers: { token: localStorage.token },
-        });
+      // response of credentials
+      const responseCredentials = await fetch("/api/files/credentials", {
+        method: "GET",
+        headers: { token: localStorage.token },
+      });
 
-        if ((await responseCredential.json()) === false) {
-          setHasCredentialFile(false);
-        }
-      } catch (error) {
-        setHasCredentialFile(true);
+      const blobRes = await responseCredentials.blob();
+
+      if (blobRes.type === "text/html") {
+        return setNotification({
+          open: true,
+          severity: "error",
+          message: "error",
+        });
       }
+
+      const file = new Blob([blobRes], { type: "application/pdf" });
+
+      const fileURL = URL.createObjectURL(file);
+
+      setCredentialsURL(fileURL);
     } catch (error) {
       console.error(error.message);
     }
@@ -179,83 +271,6 @@ const Profile = ({ setNotification }) => {
 
   const handleToTime = (time) => {
     setInputs({ ...inputs, toTime: time });
-  };
-
-  const handleFileUpload = async (event) => {
-    const formData = new FormData();
-
-    formData.append("credential", event.target.files[0]);
-
-    try {
-      const response = await fetch("/api/files/credentials/", {
-        method: "PUT",
-        headers: { token: localStorage.token },
-        body: formData,
-      });
-
-      const parseRes = await response.json();
-
-      const { severity, message } = parseRes;
-
-      setNotification({
-        open: true,
-        severity: severity,
-        message: message,
-      });
-      setHasCredentialFile(true);
-    } catch (error) {
-      setNotification({
-        open: true,
-        severity: "error",
-        message: error,
-      });
-    }
-  };
-
-  const handleFileView = async () => {
-    try {
-      const response = await fetch("/api/files/credentials/", {
-        method: "GET",
-        headers: { token: localStorage.token },
-        responseType: "blob",
-      });
-
-      const blobRes = await response.blob();
-
-      const file = new Blob([blobRes], { type: blobRes.type });
-
-      const fileURL = URL.createObjectURL(file);
-
-      window.open(fileURL);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleFileRemove = async () => {
-    try {
-      const response = await fetch("/api/files/credentials/", {
-        method: "DELETE",
-        headers: { token: localStorage.token },
-      });
-
-      const parseRes = await response.json();
-
-      const { severity, message } = parseRes;
-
-      setNotification({
-        open: true,
-        severity: severity,
-        message: message,
-      });
-      setHasCredentialFile(false);
-    } catch (error) {
-      setNotification({
-        open: true,
-        severity: "error",
-        message: error,
-      });
-    }
   };
 
   const handleCheckbox = (event) => {
@@ -484,11 +499,11 @@ const Profile = ({ setNotification }) => {
               />
             </Grid>
             <Grid item xs={12}>
-              {hasCredentialFile ? (
+              {credentialsURL ? (
                 <ButtonGroup aria-label="outlined secondary button group">
                   <Button
                     variant="outlined"
-                    color="primary"
+                    color="secondary"
                     onClick={handleFileView}
                   >
                     View credentials
@@ -502,26 +517,36 @@ const Profile = ({ setNotification }) => {
                   </Button>
                 </ButtonGroup>
               ) : (
-                <>
+                <ButtonGroup aria-label="outlined secondary button group">
                   <input
                     accept="application/pdf"
                     className={classes.fileUpload}
                     id="file-upload"
                     type="file"
-                    onChange={handleFileUpload}
+                    onChange={(e) => setCredentials(e.target.files[0])}
                   />
                   <label htmlFor="file-upload">
                     <Button
-                      variant="contained"
-                      color="default"
-                      startIcon={<CloudUploadIcon />}
+                      variant="outlined"
+                      color="secondary"
                       component="span"
                     >
-                      Upload credentials
+                      Select credentials
                     </Button>
                   </label>
-                </>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<CloudUploadIcon />}
+                    onClick={handleFileUpload}
+                  >
+                    Upload credentials
+                  </Button>
+                </ButtonGroup>
               )}
+            </Grid>
+            <Grid item xs={12}>
+              {credentials && credentials.name}
             </Grid>
             <Grid item xs={12}>
               <FormControlLabel
