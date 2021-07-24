@@ -38,6 +38,8 @@ const useStyles = makeStyles((theme) => ({
 const Register = ({ setAuth, setNotification }) => {
   const classes = useStyles();
 
+  const [loading, setLoading] = useState(false);
+
   const [inputs, setInputs] = useState({
     type: "",
     firstName: "",
@@ -66,6 +68,8 @@ const Register = ({ setAuth, setNotification }) => {
         return;
       }
 
+      setLoading(true);
+
       const body = { type, firstname, lastname, email, password };
 
       const response = await fetch("/api/auth/register", {
@@ -92,6 +96,7 @@ const Register = ({ setAuth, setNotification }) => {
         });
         setAuth(false);
       }
+      setLoading(false);
     } catch (error) {
       setNotification({
         open: true,
@@ -99,6 +104,7 @@ const Register = ({ setAuth, setNotification }) => {
         message: error.message,
       });
       setAuth(false);
+      setLoading(false);
       console.error(error.message);
     }
   };
@@ -202,8 +208,9 @@ const Register = ({ setAuth, setNotification }) => {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={loading}
           >
-            Sign Up
+            {!loading ? "Sign Up" : "Loading..."}
           </Button>
           <Grid container justify="flex-end">
             <Grid item xs>
