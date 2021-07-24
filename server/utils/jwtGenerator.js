@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 
 module.exports = (id, type) => {
   // intialise the token payload
