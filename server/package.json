@@ -6,6 +6,7 @@
   "author": "Studius",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.953.0",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
