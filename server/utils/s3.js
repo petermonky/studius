@@ -3,27 +3,18 @@ const aws = require("aws-sdk");
 const S3 = require("aws-sdk/clients/s3");
 const fs = require("fs");
 
-// const bucketName = process.env.AWS_BUCKET_NAME;
-// const region = process.env.AWS_BUCKET_REGION;
-// const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-// const secretAccessKey = process.env.AWS_SECRET_KEY;
+const bucketName = process.env.AWS_BUCKET_NAME;
+const region = process.env.AWS_BUCKET_REGION || process.env.AWS_REGION_MYAPP;
+const accessKeyId =
+  process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID_MYAPP;
+const secretAccessKey =
+  process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY_MYAPP;
 
-aws.config.update({
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID_MYAPP,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_MYAPP,
-  },
-  region: process.env.AWS_REGION_MYAPP,
-  bucketname: process.env.AWS_BUCKET_NAME,
+const s3 = new S3({
+  region,
+  accessKeyId,
+  secretAccessKey,
 });
-
-// const s3 = new S3({
-//   region,
-//   accessKeyId,
-//   secretAccessKey,
-// });
-
-const s3 = new S3();
 
 // upload a file to s3 bucket
 const uploadFile = (file) => {
