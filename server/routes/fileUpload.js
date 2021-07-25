@@ -2,7 +2,6 @@ const router = require("express").Router();
 const authorisation = require("../middleware/authorisation");
 const credentials = require("../middleware/credentials");
 const multer = require("multer");
-const fs = require("fs");
 const os = require("os");
 const pool = require("../db");
 
@@ -10,9 +9,29 @@ const { uploadFile, getFileStream, deleteFile } = require("../utils/s3");
 
 const upload = multer({ dest: os.tmpdir() });
 
-router.get("/credentials", [authorisation, credentials], (req, res) => {
+router.get("/credentials", authorisation, async (req, res) => {
   try {
-    const key = req.user.credentialsName;
+    const tutorId = req.headers.tutorid || req.user.id;
+
+    const credentials = await pool.query(
+      "SELECT * FROM credentials WHERE tutorid = $1",
+      [tutorId]
+    );
+
+    if (credentials.rows.length === 0) {
+      return res.status(404).json({ key: "" });
+    }
+
+    return res.json({ key: credentials.rows[0].aws_name });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+router.get("/credentials/:key", authorisation, (req, res) => {
+  try {
+    const { key } = req.params;
+    // const key = req.user.credentialsName;
     const readStream = getFileStream(key);
 
     readStream.pipe(res);
@@ -23,10 +42,9 @@ router.get("/credentials", [authorisation, credentials], (req, res) => {
 
 router.post(
   "/credentials",
-  [authorisation, upload.single("credentials")],
+  [authorisation, credentials, upload.single("credentials")],
   async (req, res) => {
     try {
-      console.log(req.file);
       const result = await uploadFile(req.file);
 
       const fileRetrieve = await pool.query(
@@ -51,7 +69,11 @@ router.post(
       //   }
       // });
 
-      res.json({ status: true, message: "Upload successful!" });
+      res.json({
+        status: true,
+        message: "Upload successful!",
+        key: result.key,
+      });
     } catch (error) {
       res.status(500).json({ status: false, message: "Server error" });
       console.error(error);
@@ -60,17 +82,17 @@ router.post(
 );
 
 router.delete(
-  "/credentials",
+  "/credentials/:key",
   [authorisation, credentials],
   async (req, res) => {
     try {
-      const { credentialsId } = req.user;
+      const { key } = req.user;
 
-      await deleteFile(req.user.credentialsName);
+      await deleteFile(key);
 
       const fileDelete = await pool.query(
-        "DELETE FROM credentials WHERE id = $1 RETURNING *",
-        [credentialsId]
+        "DELETE FROM credentials WHERE aws_name = $1 RETURNING *",
+        [key]
       );
 
       if (fileDelete.rows.length === 0) {
