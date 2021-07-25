@@ -115,7 +115,7 @@ const Main = ({ match, setAuth, setNotification }) => {
           )}
         />
         <Route
-          path={`${match.url}/marketplace`}
+          path={`${match.url}/marketplace/:id?`}
           render={(props) => (
             <Marketplace
               {...props}
