@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
@@ -57,25 +58,75 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ProfileView = ({
-  userInformation,
-  profile,
-  setProfile,
-  match,
-  credentialsURL,
-  setCredentialsURL,
-  setNotification,
-}) => {
+const ProfileView = ({ userInformation, match, setNotification }) => {
+  const { id } = useParams();
+
   const classes = useStyles();
 
-  const handleViewCredentials = () => {
-    window.open(credentialsURL);
+  const [profile, setProfile] = useState({
+    isSet: false,
+    firstname: "",
+    lastname: "",
+    subjects: [],
+    rate: "",
+    times: [],
+    description: "",
+  });
+
+  const [credentialsKey, setCredentialsKey] = useState("");
+
+  const handleViewCredentials = async () => {
+    const response = await fetch(`/api/files/credentials/${credentialsKey}`, {
+      method: "GET",
+      headers: { token: localStorage.token },
+    });
+
+    const blobRes = await response.blob();
+
+    // if (blobRes.type === "text/html") {
+    //   return setNotification({
+    //     open: true,
+    //     severity: "error",
+    //     message: "error",
+    //   });
+    // }
+
+    const file = new Blob([blobRes], { type: "application/pdf" });
+
+    const fileURL = URL.createObjectURL(file);
+
+    window.open(fileURL);
   };
 
-  const handleProfileClose = () => {
-    setProfile({ ...profile, isSet: false });
-    setCredentialsURL("");
+  const getProfile = async () => {
+    try {
+      const responseProfile = await fetch(`/api/marketplace/${id}`, {
+        method: "GET",
+        headers: { token: localStorage.token },
+      });
+
+      const parseResProf = await responseProfile.json();
+
+      setProfile(parseResProf);
+
+      console.log(id);
+
+      const responseCredentials = await fetch("/api/files/credentials", {
+        method: "GET",
+        headers: { token: localStorage.token, tutorid: id },
+      });
+
+      const parseRes = await responseCredentials.json();
+
+      const { key } = parseRes;
+
+      return setCredentialsKey(key);
+    } catch (error) {}
   };
+
+  useEffect(() => {
+    getProfile();
+  }, []);
 
   const [contractOpen, setContractOpen] = useState(false);
 
@@ -91,8 +142,6 @@ const ProfileView = ({
 
   const handleContractConfirm = async (event) => {
     event.preventDefault();
-    console.log(profile);
-    console.log(contractSubject);
 
     try {
       const body = { OUID: profile.id, subject: contractSubject };
@@ -235,19 +284,16 @@ const ProfileView = ({
                 color="primary"
                 className={classes.button}
                 onClick={handleViewCredentials}
-                disabled={!Boolean(credentialsURL)}
+                disabled={!credentialsKey}
               >
-                {Boolean(credentialsURL)
-                  ? "View credentials"
-                  : "No credentials"}
+                {credentialsKey ? "View credentials" : "No credentials"}
               </Button>
             ) : null}
             <Button
               color="secondary"
               className={classes.button}
-              onClick={handleProfileClose}
               component={Link}
-              to={match.url}
+              to={"/main/marketplace"}
             >
               Back
             </Button>

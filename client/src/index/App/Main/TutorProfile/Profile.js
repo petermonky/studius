@@ -88,7 +88,7 @@ const Profile = ({ setNotification }) => {
   });
 
   const [credentials, setCredentials] = useState(null);
-  const [credentialsURL, setCredentialsURL] = useState("");
+  const [credentialsKey, setCredentialsKey] = useState("");
 
   const handleFileUpload = async () => {
     try {
@@ -118,12 +118,7 @@ const Profile = ({ setNotification }) => {
           message: parseRes.message,
         });
 
-        const file = new Blob([credentials], { type: "application/pdf" });
-
-        const fileURL = URL.createObjectURL(file);
-
-        setCredentials(null);
-        setCredentialsURL(fileURL);
+        setCredentialsKey(parseRes.key);
       } else {
         setNotification({
           open: true,
@@ -136,13 +131,44 @@ const Profile = ({ setNotification }) => {
     }
   };
 
-  const handleFileView = () => {
-    window.open(credentialsURL);
+  const handleFileView = async () => {
+    try {
+      if (!credentialsKey) {
+        return setNotification({
+          open: true,
+          severity: "error",
+          message: "No credentials!",
+        });
+      }
+
+      const response = await fetch(`/api/files/credentials/${credentialsKey}`, {
+        method: "GET",
+        headers: { token: localStorage.token },
+      });
+
+      const blobRes = await response.blob();
+
+      // if (blobRes.type === "text/html") {
+      //   return setNotification({
+      //     open: true,
+      //     severity: "error",
+      //     message: "error",
+      //   });
+      // }
+
+      const file = new Blob([blobRes], { type: "application/pdf" });
+
+      const fileURL = URL.createObjectURL(file);
+
+      window.open(fileURL);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleFileRemove = async () => {
     try {
-      const response = await fetch("/api/files/credentials", {
+      const response = await fetch(`/api/files/credentials/${credentialsKey}`, {
         method: "DELETE",
         headers: { token: localStorage.token },
       });
@@ -162,7 +188,7 @@ const Profile = ({ setNotification }) => {
           message: parseRes.message,
         });
       }
-      setCredentialsURL("");
+      setCredentialsKey("");
     } catch (error) {
       setNotification({
         open: true,
@@ -206,21 +232,11 @@ const Profile = ({ setNotification }) => {
         headers: { token: localStorage.token },
       });
 
-      const blobRes = await responseCredentials.blob();
+      const parseResCred = await responseCredentials.json();
 
-      if (blobRes.type === "text/html") {
-        return setNotification({
-          open: true,
-          severity: "error",
-          message: "error",
-        });
-      }
+      const { key } = parseResCred;
 
-      const file = new Blob([blobRes], { type: "application/pdf" });
-
-      const fileURL = URL.createObjectURL(file);
-
-      setCredentialsURL(fileURL);
+      return setCredentialsKey(key);
     } catch (error) {
       console.error(error.message);
     }
@@ -499,7 +515,7 @@ const Profile = ({ setNotification }) => {
               />
             </Grid>
             <Grid item xs={12}>
-              {credentialsURL ? (
+              {credentialsKey ? (
                 <ButtonGroup aria-label="outlined secondary button group">
                   <Button
                     variant="outlined"
@@ -518,22 +534,17 @@ const Profile = ({ setNotification }) => {
                 </ButtonGroup>
               ) : (
                 <ButtonGroup aria-label="outlined secondary button group">
-                  <input
-                    accept="application/pdf"
-                    className={classes.fileUpload}
-                    id="file-upload"
-                    type="file"
-                    onChange={(e) => setCredentials(e.target.files[0])}
-                  />
-                  <label htmlFor="file-upload">
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      component="span"
-                    >
-                      Select credentials
-                    </Button>
-                  </label>
+                  <Button variant="outlined" color="primary" component="label">
+                    Select credentials
+                    <input
+                      accept="application/pdf"
+                      className={classes.fileUpload}
+                      id="file-upload"
+                      type="file"
+                      onChange={(e) => setCredentials(e.target.files[0])}
+                      hidden
+                    />
+                  </Button>
                   <Button
                     variant="outlined"
                     color="secondary"
