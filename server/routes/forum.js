@@ -130,6 +130,31 @@ router.get("/id/:forumId", authorisation, async (req, res) => {
   }
 });
 
+router.delete("/id/:forumId", authorisation, async (req, res) => {
+  try {
+    const { forumId } = req.params;
+
+    const forum = await pool.query(
+      "DELETE FROM forums where id = $1 RETURNING *",
+      [forumId]
+    );
+
+    if (forum.rows[0]) {
+      return res.json({
+        status: true,
+        message: "Forum succesfully terminated!",
+      });
+    }
+
+    return res
+      .status(404)
+      .json({ status: false, message: "No forum to terminate!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(404).json({ status: false, message: "Server error" });
+  }
+});
+
 //ANNOUNCMENTS
 //get announcements :
 router.get("/announcements", authorisation, async (req, res) => {

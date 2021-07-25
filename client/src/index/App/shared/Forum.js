@@ -9,8 +9,16 @@ import Files from "../Main/Forum/Files";
 import QnA from "../Main/Forum/QnA";
 import Box from "@material-ui/core/Box";
 import { makeStyles } from "@material-ui/core/styles";
+
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import Fab from "@material-ui/core/Fab";
+import { Button } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -21,6 +29,9 @@ const useStyles = makeStyles((theme) => ({
   menu: {
     position: "fixed",
   },
+  leaveButton: {
+    top: theme.spacing(1),
+  },
 }));
 
 const Forum = ({
@@ -28,9 +39,12 @@ const Forum = ({
   userInformation,
   setNotification,
   setAppBarTitle,
+  history,
   props,
 }) => {
   const { forumid } = useParams();
+
+  const [openLeaveDialogue, setOpenLeaveDialogue] = useState(false);
 
   const [validForum, setValidForum] = useState(true);
 
@@ -65,6 +79,54 @@ const Forum = ({
     handleGetForum();
   }, [setAppBarTitle]);
 
+  const handleLeaveForum = async () => {
+    try {
+      const response = await fetch(`/api/forum/id/${forumid}`, {
+        method: "DELETE",
+        headers: { token: localStorage.token },
+      });
+
+      const parseRes = await response.json();
+
+      if (parseRes.status === true) {
+        setNotification({
+          open: true,
+          severity: "success",
+          message: parseRes.message,
+        });
+        return history.push("/main/dashboard");
+      } else {
+        return setNotification({
+          open: true,
+          severity: "error",
+          message: parseRes.message,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const LeaveDialogue = () => (
+    <Dialog open={openLeaveDialogue} maxWidth="xs" fullWidth>
+      <DialogTitle id="attribute-dialogue">Leave tuition</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Are you sure you would like to leave this tuition? All documents and
+          data related to this forum will be permanently deleted.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button color="primary" onClick={() => setOpenLeaveDialogue(false)}>
+          Cancel
+        </Button>
+        <Button color="primary" onClick={handleLeaveForum}>
+          Confirm
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   return !validForum ? (
     <Redirect to={"/main/dashboard"} />
   ) : (
@@ -77,7 +139,16 @@ const Forum = ({
           className={classes.menu}
         >
           <Grid item xs={12}>
-            <Menu match={match} />
+            <Grid container direction="column">
+              <Menu match={match} />
+              <Button
+                variant="contained"
+                className={classes.leaveButton}
+                onClick={() => setOpenLeaveDialogue(true)}
+              >
+                Leave tuition
+              </Button>
+            </Grid>
           </Grid>
         </Box>
 
@@ -131,6 +202,7 @@ const Forum = ({
           </Grid>
         </Box>
       </Container>
+      <LeaveDialogue />
     </>
   );
 };
