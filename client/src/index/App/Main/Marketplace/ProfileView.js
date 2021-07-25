@@ -287,7 +287,9 @@ const ProfileView = ({ userInformation, match, setNotification }) => {
             ) : null}
             <Grid item xs={12}>
               <Typography variant="h6">Description</Typography>
-              <Typography>{profile.description}</Typography>
+              <Typography style={{ whiteSpace: "pre-line" }}>
+                {profile.description}
+              </Typography>
             </Grid>
             <Grid item xs={12}></Grid>
           </Grid>
