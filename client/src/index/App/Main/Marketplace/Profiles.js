@@ -66,6 +66,22 @@ const Profiles = ({ match }) => {
     getProfiles();
   }, []);
 
+  const filteredProfiles = profiles.filter((profile) => {
+    const subjects = Array.isArray(profile.subjects[0])
+      ? profile.subjects.map((subject) => subject.join(" "))
+      : profile.subjects;
+
+    const values = [`${profile.firstname} ${profile.lastname}`, ...subjects]
+      .concat(profile.education || [])
+      .map((term) => term.toLowerCase());
+
+    return (
+      searchArray.filter((term) =>
+        values.map((value) => value.includes(term)).includes(true)
+      ).length === searchArray.length
+    );
+  });
+
   useEffect(() => {
     setSearchArray(search.split(",").map((term) => term.trim().toLowerCase()));
   }, [search]);
@@ -93,93 +109,73 @@ const Profiles = ({ match }) => {
           </Container>
         </Grid>
         {!loading ? (
-          profiles
-            .filter((profile) => {
-              const subjects = Array.isArray(profile.subjects[0])
-                ? profile.subjects.map((subject) => subject.join(" "))
-                : profile.subjects;
-
-              const values = [
-                `${profile.firstname} ${profile.lastname}`,
-                ...subjects,
-              ]
-                .concat(profile.education || [])
-                .map((term) => term.toLowerCase());
-
-              return (
-                searchArray.filter((term) =>
-                  values.map((value) => value.includes(term)).includes(true)
-                ).length === searchArray.length
-              );
-            })
-            .map((profile) => (
-              <Grid item key={profile.id} xs={12} sm={6} md={4}>
-                <Card className={classes.card}>
-                  <CardContent>
-                    <Typography gutterBottom variant="h4">
-                      {`${profile.firstname} ${profile.lastname}`}
-                    </Typography>
-                    {Object.keys(profile)
-                      .filter(
-                        (detail) =>
-                          !(
-                            detail === "firstname" ||
-                            detail === "lastname" ||
-                            detail === "id" ||
-                            detail === "description"
-                          )
-                      )
-                      .map((detail, index) => {
-                        return (
-                          <Box
-                            key={detail}
-                            className={classes.profileDetail}
-                            gutterBottom
-                          >
-                            <Typography variant="h6">
-                              {stylisedTitles[detail]}
+          filteredProfiles.map((profile) => (
+            <Grid item key={profile.id} xs={12} sm={6} md={4}>
+              <Card className={classes.card}>
+                <CardContent>
+                  <Typography gutterBottom variant="h4">
+                    {`${profile.firstname} ${profile.lastname}`}
+                  </Typography>
+                  {Object.keys(profile)
+                    .filter(
+                      (detail) =>
+                        !(
+                          detail === "firstname" ||
+                          detail === "lastname" ||
+                          detail === "id" ||
+                          detail === "description"
+                        )
+                    )
+                    .map((detail, index) => {
+                      return (
+                        <Box
+                          key={detail}
+                          className={classes.profileDetail}
+                          gutterBottom
+                        >
+                          <Typography variant="h6">
+                            {stylisedTitles[detail]}
+                          </Typography>
+                          {detail === "subjects" ? (
+                            <Typography>
+                              {profile[detail]
+                                .map((subject) =>
+                                  Array.isArray(subject)
+                                    ? subject.join(" ")
+                                    : subject
+                                )
+                                .join(", ")}
                             </Typography>
-                            {detail === "subjects" ? (
-                              <Typography>
-                                {profile[detail]
-                                  .map((subject) =>
-                                    Array.isArray(subject)
-                                      ? subject.join(" ")
-                                      : subject
-                                  )
-                                  .join(", ")}
-                              </Typography>
-                            ) : detail === "rate" ? (
-                              <Typography>{`$ ${profile[detail]} / hr`}</Typography>
-                            ) : detail === "times" ? (
-                              <Typography>
-                                {`${moment(profile[detail][0], "HH:mm").format(
-                                  "hh:mm A"
-                                )} — ${moment(
-                                  profile[detail][1],
-                                  "HH:mm"
-                                ).format("hh:mm A")}`}
-                              </Typography>
-                            ) : detail === "education" ? (
-                              <Typography>{profile[detail]}</Typography>
-                            ) : null}
-                          </Box>
-                        );
-                      })}
-                  </CardContent>
-                  <CardActions>
-                    <Button
-                      size="small"
-                      color="primary"
-                      component={Link}
-                      to={`${match.url}/${profile.id}`}
-                    >
-                      View
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))
+                          ) : detail === "rate" ? (
+                            <Typography>{`$ ${profile[detail]} / hr`}</Typography>
+                          ) : detail === "times" ? (
+                            <Typography>
+                              {`${moment(profile[detail][0], "HH:mm").format(
+                                "hh:mm A"
+                              )} — ${moment(profile[detail][1], "HH:mm").format(
+                                "hh:mm A"
+                              )}`}
+                            </Typography>
+                          ) : detail === "education" ? (
+                            <Typography>{profile[detail]}</Typography>
+                          ) : null}
+                        </Box>
+                      );
+                    })}
+                </CardContent>
+                <CardActions>
+                  <Button
+                    size="small"
+                    color="primary"
+                    component={Link}
+                    to={`${match.url}/${profile.id}`}
+                  >
+                    View
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))
         ) : (
           <div className={classes.noData}>
             <Loading />
@@ -188,8 +184,8 @@ const Profiles = ({ match }) => {
         <Grid
           item
           xs={12}
-          sm={6 * (2 - (profiles.length % 2))}
-          md={4 * (3 - (profiles.length % 3))}
+          sm={6 * (2 - (filteredProfiles.length % 2))}
+          md={4 * (3 - (filteredProfiles.length % 3))}
         ></Grid>
       </Grid>
     </Container>
