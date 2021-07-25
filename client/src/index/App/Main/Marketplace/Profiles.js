@@ -47,7 +47,7 @@ const Profiles = ({ match }) => {
     try {
       setLoading(true);
 
-      const response = await fetch("/api/marketplace/", {
+      const response = await fetch("/api/marketplace", {
         method: "GET",
         headers: { token: localStorage.token },
       });
