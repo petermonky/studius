@@ -63,6 +63,8 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
 
   const classes = useStyles();
 
+  const [loadingCredentials, setLoadingCredentials] = useState(true);
+
   const [profile, setProfile] = useState({
     isSet: false,
     firstname: "",
@@ -76,30 +78,40 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
   const [credentialsKey, setCredentialsKey] = useState("");
 
   const handleViewCredentials = async () => {
-    const response = await fetch(`/api/files/credentials/${credentialsKey}`, {
-      method: "GET",
-      headers: { token: localStorage.token },
-    });
+    try {
+      setLoadingCredentials(true);
 
-    const blobRes = await response.blob();
+      const response = await fetch(`/api/files/credentials/${credentialsKey}`, {
+        method: "GET",
+        headers: { token: localStorage.token },
+      });
 
-    // if (blobRes.type === "text/html") {
-    //   return setNotification({
-    //     open: true,
-    //     severity: "error",
-    //     message: "error",
-    //   });
-    // }
+      const blobRes = await response.blob();
 
-    const file = new Blob([blobRes], { type: "application/pdf" });
+      // if (blobRes.type === "text/html") {
+      //   return setNotification({
+      //     open: true,
+      //     severity: "error",
+      //     message: "error",
+      //   });
+      // }
 
-    const fileURL = URL.createObjectURL(file);
+      const file = new Blob([blobRes], { type: "application/pdf" });
 
-    window.open(fileURL);
+      const fileURL = URL.createObjectURL(file);
+
+      window.open(fileURL);
+
+      setLoadingCredentials(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const getProfile = async () => {
     try {
+      setLoadingCredentials(true);
+
       const responseProfile = await fetch(`/api/marketplace/${id}`, {
         method: "GET",
         headers: { token: localStorage.token },
@@ -118,6 +130,7 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
 
       const { key } = parseRes;
 
+      setLoadingCredentials(false);
       return setCredentialsKey(key);
     } catch (error) {}
   };
@@ -308,9 +321,13 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
                 color="primary"
                 className={classes.button}
                 onClick={handleViewCredentials}
-                disabled={!credentialsKey}
+                disabled={!credentialsKey || loadingCredentials}
               >
-                {credentialsKey ? "View credentials" : "No credentials"}
+                {loadingCredentials
+                  ? "Loading..."
+                  : credentialsKey
+                  ? "View credentials"
+                  : "No credentials"}
               </Button>
             ) : null}
             <Button

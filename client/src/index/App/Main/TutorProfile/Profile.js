@@ -87,17 +87,21 @@ const Profile = ({ setNotification }) => {
     ispublic: false,
   });
 
+  const [loadingCredentials, setLoadingCredentials] = useState(false);
   const [credentials, setCredentials] = useState(null);
   const [credentialsKey, setCredentialsKey] = useState("");
 
   const handleFileUpload = async () => {
     try {
+      setLoadingCredentials(true);
+
       if (!credentials) {
-        return setNotification({
+        setNotification({
           open: true,
           severity: "error",
           message: "No credentials selected!",
         });
+        return setLoadingCredentials(false);
       }
 
       const formData = new FormData();
@@ -126,6 +130,8 @@ const Profile = ({ setNotification }) => {
           message: parseRes.message,
         });
       }
+
+      return setLoadingCredentials(false);
     } catch (error) {
       console.error(error);
     }
@@ -133,6 +139,8 @@ const Profile = ({ setNotification }) => {
 
   const handleFileView = async () => {
     try {
+      setLoadingCredentials(true);
+
       if (!credentialsKey) {
         return setNotification({
           open: true,
@@ -161,6 +169,8 @@ const Profile = ({ setNotification }) => {
       const fileURL = URL.createObjectURL(file);
 
       window.open(fileURL);
+
+      return setLoadingCredentials(false);
     } catch (error) {
       console.error(error);
     }
@@ -521,20 +531,29 @@ const Profile = ({ setNotification }) => {
                     variant="outlined"
                     color="secondary"
                     onClick={handleFileView}
+                    disabled={loadingCredentials}
                   >
-                    View credentials
+                    {loadingCredentials
+                      ? "Downloading credentials..."
+                      : "View credentials"}
                   </Button>
                   <Button
                     variant="outlined"
                     color="secondary"
                     onClick={handleFileRemove}
+                    disabled={loadingCredentials}
                   >
                     Remove credentials
                   </Button>
                 </ButtonGroup>
               ) : (
                 <ButtonGroup aria-label="outlined secondary button group">
-                  <Button variant="outlined" color="primary" component="label">
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    component="label"
+                    disabled={loadingCredentials}
+                  >
                     Select credentials
                     <input
                       accept="application/pdf"
@@ -550,8 +569,11 @@ const Profile = ({ setNotification }) => {
                     color="secondary"
                     startIcon={<CloudUploadIcon />}
                     onClick={handleFileUpload}
+                    disabled={loadingCredentials}
                   >
-                    Upload credentials
+                    {loadingCredentials
+                      ? "Uploading credentials..."
+                      : "Upload credentials"}
                   </Button>
                 </ButtonGroup>
               )}
