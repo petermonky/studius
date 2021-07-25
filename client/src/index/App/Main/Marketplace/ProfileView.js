@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ProfileView = ({ userInformation, match, setNotification }) => {
+const ProfileView = ({ userInformation, setNotification, history }) => {
   const { id } = useParams();
 
   const classes = useStyles();
@@ -108,8 +108,6 @@ const ProfileView = ({ userInformation, match, setNotification }) => {
       const parseResProf = await responseProfile.json();
 
       setProfile(parseResProf);
-
-      console.log(id);
 
       const responseCredentials = await fetch("/api/files/credentials", {
         method: "GET",
@@ -171,10 +169,20 @@ const ProfileView = ({ userInformation, match, setNotification }) => {
 
       const parseRes = await response.json();
 
-      setNotification({
-        ...parseRes,
-        open: true,
-      });
+      if (parseRes.status === true) {
+        setNotification({
+          open: true,
+          severity: "success",
+          message: parseRes.message,
+        });
+        history.push("/main/dashboard");
+      } else {
+        setNotification({
+          open: true,
+          severity: "error",
+          message: parseRes.message,
+        });
+      }
     } catch (error) {
       setNotification({
         open: true,
