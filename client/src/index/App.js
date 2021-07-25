@@ -20,6 +20,9 @@ import Loading from "./shared/Loading";
 import Main from "./App/Main";
 
 const theme = createMuiTheme({
+  typography: {
+    fontFamily: ["Noto Sans", "Roboto"].join(","),
+  },
   palette: {
     primary: {
       main: "#34495E",
