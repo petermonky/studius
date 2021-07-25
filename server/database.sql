@@ -17,7 +17,6 @@ CREATE TABLE users(
 --create tutor table
 CREATE TABLE tutors(
   subjects VARCHAR(255)[], --array size and depth ignored during run-time
-  engaged VARCHAR[][], --[subject, student_id, student_name, forumid]
   rate VARCHAR(255),
   times VARCHAR(255)[],
   education VARCHAR(255),
@@ -28,7 +27,6 @@ CREATE TABLE tutors(
 --create student table
 CREATE TABLE students(
   subjects VARCHAR(255)[][], --array size and depth ignored during run-time
-  engaged VARCHAR[][], --[subject, tutor_id, tutor_name, forumid]
   rate VARCHAR(255),
   times VARCHAR(255)[],
   description VARCHAR,
@@ -39,6 +37,8 @@ CREATE TABLE students(
 CREATE TABLE forums(
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   subject VARCHAR(255) NOT NULL,
+  tutor_name VARCHAR(255) NOT NULL,
+  student_name VARCHAR(255) NOT NULL,
   tutor_id uuid NOT NULL,
   student_id uuid NOT NULL
 );
@@ -52,7 +52,7 @@ CREATE TABLE credentials(
 
 CREATE TABLE announcements(
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    forumid uuid REFERENCES forums(id),
+    forumid uuid REFERENCES forums(id) ON DELETE CASCADE,
     title TEXT, 
     body TEXT, 
     date VARCHAR(500)
@@ -60,7 +60,7 @@ CREATE TABLE announcements(
 
 CREATE TABLE qna(
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    forumid uuid REFERENCES forums(id),  
+    forumid uuid REFERENCES forums(id) ON DELETE CASCADE,  
     question TEXT,
     answer TEXT, 
     dateAsked VARCHAR(500), 
@@ -69,7 +69,7 @@ CREATE TABLE qna(
 
 -- renamed to match credentials table for consistency 
 CREATE TABLE assignments(
-    forumid uuid REFERENCES forums(id),
+    forumid uuid REFERENCES forums(id) ON DELETE CASCADE,
     datePosted VARCHAR(500),
     filename VARCHAR UNIQUE NOT NULL,
     filepath VARCHAR NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE assignments(
 );
 
 CREATE TABLE files(
-    forumid uuid REFERENCES forums(id),  
+    forumid uuid REFERENCES forums(id) ON DELETE CASCADE,  
     datePosted VARCHAR(500), 
     filename VARCHAR,
     filepath VARCHAR,
