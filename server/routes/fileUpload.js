@@ -45,6 +45,12 @@ router.post(
   [authorisation, credentials, upload.single("credentials")],
   async (req, res) => {
     try {
+      if (req.file.mimetype !== "application/pdf") {
+        return res.json({
+          status: false,
+          message: "File type must be PDF!",
+        });
+      }
       const result = await uploadFile(req.file);
 
       const fileRetrieve = await pool.query(

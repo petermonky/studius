@@ -131,6 +131,7 @@ const Profile = ({ setNotification }) => {
         });
       }
 
+      setCredentials(null);
       return setLoadingCredentials(false);
     } catch (error) {
       console.error(error);
