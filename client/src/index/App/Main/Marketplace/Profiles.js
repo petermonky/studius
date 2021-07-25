@@ -35,12 +35,36 @@ const stylisedTitles = {
   education: "Education",
 };
 
-const Profiles = ({ loading, profiles, handleProfileOpen, match }) => {
+const Profiles = ({ match }) => {
   const classes = useStyles();
 
+  const [loading, setLoading] = useState(true);
+  const [profiles, setProfiles] = useState([]);
   const [search, setSearch] = useState("");
-
   const [searchArray, setSearchArray] = useState([]);
+
+  const getProfiles = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch("/api/marketplace/", {
+        method: "GET",
+        headers: { token: localStorage.token },
+      });
+
+      const parseRes = await response.json();
+
+      setProfiles([...parseRes]);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    getProfiles();
+  }, []);
 
   useEffect(() => {
     setSearchArray(search.split(",").map((term) => term.trim().toLowerCase()));
@@ -147,9 +171,8 @@ const Profiles = ({ loading, profiles, handleProfileOpen, match }) => {
                     <Button
                       size="small"
                       color="primary"
-                      onClick={handleProfileOpen(profile)}
                       component={Link}
-                      to={`${match.url}/view`}
+                      to={`${match.url}/${profile.id}`}
                     >
                       View
                     </Button>
