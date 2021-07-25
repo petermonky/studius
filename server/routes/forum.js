@@ -120,6 +120,17 @@ router.get("/id/:forumId", authorisation, async (req, res) => {
     // need a way to determine whether user is authorised to view forum with said id
 
     if (forum.rows[0]) {
+      if (req.user.type === "Tutor") {
+        return res.json({
+          ...forum.rows[0],
+          OU_name: forum.rows[0].student_name,
+        });
+      } else {
+        return res.json({
+          ...forum.rows[0],
+          OU_name: forum.rows[0].tutor_name,
+        });
+      }
       return res.json(forum.rows[0]);
     }
 

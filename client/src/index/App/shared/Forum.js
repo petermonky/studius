@@ -61,13 +61,7 @@ const Forum = ({
         return setValidForum(false);
       }
 
-      setAppBarTitle(
-        `Forum - ${parseRes.subject} with ${
-          userInformation.type === "Tutor"
-            ? parseRes.student_name
-            : parseRes.tutor_name
-        }`
-      );
+      setAppBarTitle(`Forum - ${parseRes.subject} with ${parseRes.OU_name}`);
     } catch (error) {
       console.error(error);
     }
