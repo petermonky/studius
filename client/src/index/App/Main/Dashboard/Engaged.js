@@ -99,8 +99,8 @@ const Engaged = ({ match, userInformation }) => {
                           color="textSecondary"
                         >
                           {userInformation.type === "Student"
-                            ? `Tutor's name: ${forum.tutor_name}`
-                            : `Student's name: ${forum.student_name}`}
+                            ? `Tutor: ${forum.tutor_name}`
+                            : `Student: ${forum.student_name}`}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
