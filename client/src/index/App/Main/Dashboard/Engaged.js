@@ -36,7 +36,7 @@ const Engaged = ({ match, userInformation }) => {
 
   const [loading, setLoading] = useState(true);
 
-  const [engaged, setEngaged] = useState([]);
+  const [forums, setForums] = useState([]);
 
   // get the forums
   const getEngaged = async () => {
@@ -49,12 +49,15 @@ const Engaged = ({ match, userInformation }) => {
       });
 
       const parseRes = await response.json();
-      setEngaged(parseRes.engaged || []);
-      setLoading(false);
+
+      console.log(parseRes.forums);
+
+      setForums(parseRes.forums);
     } catch (error) {
-      setLoading(false);
       console.error(error.message);
     }
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -62,7 +65,7 @@ const Engaged = ({ match, userInformation }) => {
   }, []);
 
   return !loading ? (
-    engaged.length === 0 ? (
+    forums.length === 0 ? (
       <Typography align="center" className={classes.noData} variant="h5">
         <MaterialLink component={RouterLink} to={`/main/marketplace`}>
           Meet a{" "}
@@ -78,31 +81,26 @@ const Engaged = ({ match, userInformation }) => {
       <>
         <Box display="flex" m={1}>
           <Grid direction="row" container spacing={2}>
-            {engaged.map((item, index) => (
+            {forums.map((forum, index) => (
               <Grid item xs={8} sm={3} key={index}>
                 <Box borderRadius={5} {...defaultProps}>
                   <Card className={classes.root}>
                     <CardActionArea
                       className={classes.root}
                       component={RouterLink}
-                      to={`forum/${item.split('"')[7]}/${
-                        userInformation.type === "Student"
-                          ? item.split('"')[1]
-                          : item.split('"')[5]
-                      }/announcements`}
+                      to={`forum/${forum.id}/announcements`}
                     >
                       <CardContent>
                         <Typography variant="h5" component="h2">
-                          {item.split('"')[1]}
+                          {forum.subject}
                         </Typography>
                         <Typography
                           className={classes.pos}
                           color="textSecondary"
                         >
                           {userInformation.type === "Student"
-                            ? "Tutor's "
-                            : "Student's"}{" "}
-                          name: {item.split('"')[5]}
+                            ? `Tutor's name: ${forum.tutor_name}`
+                            : `Student's name: ${forum.student_name}`}
                         </Typography>
                       </CardContent>
                     </CardActionArea>

@@ -32,7 +32,7 @@ const Main = ({ match, setAuth, setNotification }) => {
 
   const getProfile = async () => {
     try {
-      const response = await fetch("/api/main/", {
+      const response = await fetch("/api/main", {
         method: "GET",
         headers: { token: localStorage.token },
       });
@@ -41,7 +41,8 @@ const Main = ({ match, setAuth, setNotification }) => {
 
       setUserInformation({
         type: parseRes.type,
-        firstName: parseRes.firstname,
+        firstname: parseRes.firstname,
+        lastname: parseRes.lastname,
       });
     } catch (error) {
       console.error(error.message);
@@ -104,7 +105,7 @@ const Main = ({ match, setAuth, setNotification }) => {
           )}
         />
         <Route
-          path={`${match.url}/forum/:forumid?/:subject?`}
+          path={`${match.url}/forum/:forumid?`}
           render={(props) => (
             <Forum
               {...props}

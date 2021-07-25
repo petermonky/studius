@@ -7,10 +7,10 @@ const fs = require("fs");
 
 // POST into the forum table +
 // PUT update engaged in S/T table after confirmation
-router.put("/", authorisation, async (req, res) => {
+router.post("/", authorisation, async (req, res) => {
   try {
     // destructure the req.body (OUID, subject)
-    const { OUID, subject } = req.body;
+    const { OUID, subject, tutorName, studentName } = req.body;
 
     // insert into forums table
     if (req.user.type === "Tutor") {
@@ -26,34 +26,34 @@ router.put("/", authorisation, async (req, res) => {
         });
       }
 
-      // do stuff in other tables
-      const selfname = await pool.query(
-        "SELECT concat(firstname, ' ',lastname) AS name FROM tutors WHERE id=$1",
-        [req.user.id]
-      );
-      const OUname = await pool.query(
-        "SELECT concat(firstname, ' ',lastname) AS name FROM students WHERE id=$1",
-        [OUID]
-      );
-      const forumid = await pool.query(
-        "INSERT INTO forums (subject, tutor_id, student_id) VALUES ($1, $2, $3) RETURNING *",
-        [subject, req.user.id, OUID]
+      // // do stuff in other tables
+      // const selfname = await pool.query(
+      //   "SELECT concat(firstname, ' ',lastname) AS name FROM tutors WHERE id=$1",
+      //   [req.user.id]
+      // );
+      // const OUname = await pool.query(
+      //   "SELECT concat(firstname, ' ',lastname) AS name FROM students WHERE id=$1",
+      //   [OUID]
+      // );
+      await pool.query(
+        "INSERT INTO forums (subject, tutor_name, student_name, tutor_id, student_id) VALUES ($1, $2, $3, $4, $5)",
+        [subject, tutorName, studentName, req.user.id, OUID]
       );
 
-      // update self table
-      await pool.query(
-        "UPDATE tutors SET engaged = array_append(engaged, $1)  WHERE id = $2",
-        [[subject, OUID, OUname.rows[0].name, forumid.rows[0].id], req.user.id]
-      );
+      // // update self table
+      // await pool.query(
+      //   "UPDATE tutors SET engaged = array_append(engaged, $1)  WHERE id = $2",
+      //   [[subject, OUID, OUname.rows[0].name, forumid.rows[0].id], req.user.id]
+      // );
 
-      // update opposing user table
-      await pool.query(
-        "UPDATE students SET engaged = array_append(engaged, $1)  WHERE id = $2",
-        [
-          [subject, req.user.id, selfname.rows[0].name, forumid.rows[0].id],
-          OUID,
-        ]
-      );
+      // // update opposing user table
+      // await pool.query(
+      //   "UPDATE students SET engaged = array_append(engaged, $1)  WHERE id = $2",
+      //   [
+      //     [subject, req.user.id, selfname.rows[0].name, forumid.rows[0].id],
+      //     OUID,
+      //   ]
+      // );
     } else if (req.user.type === "Student") {
       const forum = await pool.query(
         "SELECT * FROM forums WHERE subject = $1 AND tutor_id = $2 AND student_id = $3",
@@ -67,31 +67,31 @@ router.put("/", authorisation, async (req, res) => {
         });
       }
 
-      const selfname = await pool.query(
-        "SELECT concat(firstname,' ', lastname) AS name FROM students WHERE id=$1",
-        [req.user.id]
-      );
-      const OUname = await pool.query(
-        "SELECT concat(firstname,' ', lastname) AS name FROM tutors WHERE id=$1",
-        [OUID]
-      );
-      const forumid = await pool.query(
-        "INSERT INTO forums (subject, tutor_id, student_id) VALUES ($1, $2, $3) RETURNING *",
-        [subject, OUID, req.user.id]
+      // const selfname = await pool.query(
+      //   "SELECT concat(firstname,' ', lastname) AS name FROM students WHERE id=$1",
+      //   [req.user.id]
+      // );
+      // const OUname = await pool.query(
+      //   "SELECT concat(firstname,' ', lastname) AS name FROM tutors WHERE id=$1",
+      //   [OUID]
+      // );
+      await pool.query(
+        "INSERT INTO forums (subject, tutor_name, student_name, tutor_id, student_id) VALUES ($1, $2, $3, $4, $5)",
+        [subject, tutorName, studentName, OUID, req.user.id]
       );
 
-      await pool.query(
-        "UPDATE students SET engaged = array_append(engaged, $1) WHERE id = $2",
-        [[subject, OUID, OUname.rows[0].name, forumid.rows[0].id], req.user.id]
-      );
+      // await pool.query(
+      //   "UPDATE students SET engaged = array_append(engaged, $1) WHERE id = $2",
+      //   [[subject, OUID, OUname.rows[0].name, forumid.rows[0].id], req.user.id]
+      // );
 
-      await pool.query(
-        "UPDATE tutors SET engaged = array_append(engaged, $1)  WHERE id = $2",
-        [
-          [subject, req.user.id, selfname.rows[0].name, forumid.rows[0].id],
-          OUID,
-        ]
-      );
+      // await pool.query(
+      //   "UPDATE tutors SET engaged = array_append(engaged, $1)  WHERE id = $2",
+      //   [
+      //     [subject, req.user.id, selfname.rows[0].name, forumid.rows[0].id],
+      //     OUID,
+      //   ]
+      // );
     }
 
     res.json({
@@ -107,26 +107,25 @@ router.put("/", authorisation, async (req, res) => {
   }
 });
 
-// get forum id
-router.post("/id", authorisation, async (req, res) => {
+// get forum details
+router.get("/id/:forumId", authorisation, async (req, res) => {
   try {
-    let user;
-    const { OUID } = req.body;
-    if (req.user.type === "Student") {
-      user = await pool.query(
-        "SELECT id FROM forums WHERE student_id = $1 AND tutor_id = $2",
-        [req.user.id, OUID]
-      );
-    } else {
-      user = await pool.query(
-        "SELECT id FROM forums WHERE student_id = $2 AND tutor_id = $1",
-        [req.user.id, OUID]
-      );
+    const { forumId } = req.params;
+
+    const forum = await pool.query("SELECT * FROM forums where id = $1", [
+      forumId,
+    ]);
+
+    // need a way to determine whether user is authorised to view forum with said id
+
+    if (forum.rows[0]) {
+      return res.json(forum.rows[0]);
     }
-    res.json(user.rows[0]);
+
+    return res.status(404).json(false);
   } catch (error) {
     console.error(error.message);
-    res.status(500).json("Server error");
+    res.status(500).json(false);
   }
 });
 
@@ -193,8 +192,6 @@ router.delete("/announcements", authorisation, async (req, res) => {
       "DELETE FROM announcements WHERE id = $1 RETURNING *",
       [id]
     );
-
-    console.log(announcement);
 
     if (announcement.rows.length === 0) {
       return res.json({

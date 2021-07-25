@@ -144,10 +144,24 @@ const ProfileView = ({ userInformation, match, setNotification }) => {
     event.preventDefault();
 
     try {
-      const body = { OUID: profile.id, subject: contractSubject };
+      const tutorName =
+        userInformation.type === "Tutor"
+          ? `${userInformation.firstname} ${userInformation.lastname}`
+          : `${profile.firstname} ${profile.lastname}`;
+      const studentName =
+        userInformation.type === "Tutor"
+          ? `${profile.firstname} ${profile.lastname}`
+          : `${userInformation.firstname} ${userInformation.lastname}`;
+
+      const body = {
+        OUID: profile.id,
+        subject: contractSubject,
+        tutorName,
+        studentName,
+      };
 
       const response = await fetch("/api/forum", {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           token: localStorage.token,

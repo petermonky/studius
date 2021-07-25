@@ -1,4 +1,4 @@
-import { useEffect, React } from "react";
+import { useState, useEffect, React } from "react";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import { Route, Switch, Redirect, useParams } from "react-router-dom";
@@ -30,15 +30,42 @@ const Forum = ({
   setAppBarTitle,
   props,
 }) => {
-  const { forumid, subject } = useParams();
+  const { forumid } = useParams();
+
+  const [validForum, setValidForum] = useState(true);
+
+  const handleGetForum = async () => {
+    try {
+      const response = await fetch(`/api/forum/id/${forumid}`, {
+        method: "GET",
+        headers: { token: localStorage.token },
+      });
+
+      const parseRes = await response.json();
+
+      if (parseRes === false) {
+        return setValidForum(false);
+      }
+
+      setAppBarTitle(
+        `Forum - ${parseRes.subject} with ${
+          userInformation.type === "Tutor"
+            ? parseRes.student_name
+            : parseRes.tutor_name
+        }`
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const classes = useStyles();
 
   useEffect(() => {
-    setAppBarTitle(`Forum - ${subject} `);
+    handleGetForum();
   }, [setAppBarTitle]);
 
-  return !forumid && !subject ? (
+  return !validForum ? (
     <Redirect to={"/main/dashboard"} />
   ) : (
     <>
