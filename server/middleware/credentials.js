@@ -2,17 +2,24 @@ const pool = require("../db");
 
 const credentials = async (req, res, next) => {
   try {
-    const credentials = await pool.query(
-      "SELECT * FROM credentials WHERE tutorid = $1",
-      [req.user.id]
-    );
+    if (req.method === "POST" && req.user.type !== "Tutor") {
+      return res.status(403).json("Unauthorised");
+    } else if (req.method === "DELETE") {
+      const { key } = req.params;
 
-    if (credentials.rows.length === 0) {
-      return res.status(404);
+      const credentials = await pool.query(
+        "SELECT * FROM credentials WHERE aws_name = $1",
+        [key]
+      );
+
+      if (credentials.rows.length === 0) {
+        return res.status(404).json("No file to delete");
+      } else if (credentials.rows[0].tutorid !== req.user.id) {
+        return res.status(403).json("Unauthorised");
+      }
+
+      req.user.key = key;
     }
-
-    req.user.credentialsId = credentials.rows[0].id;
-    req.user.credentialsName = credentials.rows[0].aws_name;
 
     next();
   } catch (error) {
