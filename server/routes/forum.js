@@ -75,6 +75,7 @@ router.post("/", authorisation, async (req, res) => {
       //   "SELECT concat(firstname,' ', lastname) AS name FROM tutors WHERE id=$1",
       //   [OUID]
       // );
+
       await pool.query(
         "INSERT INTO forums (subject, tutor_name, student_name, tutor_id, student_id) VALUES ($1, $2, $3, $4, $5)",
         [subject, tutorName, studentName, OUID, req.user.id]
@@ -94,14 +95,14 @@ router.post("/", authorisation, async (req, res) => {
       // );
     }
 
-    res.json({
-      severity: "success",
+    return res.json({
+      status: true,
       message: "Tuition successfully engaged!",
     });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({
-      severity: "error",
+      status: false,
       message: "Server error",
     });
   }
