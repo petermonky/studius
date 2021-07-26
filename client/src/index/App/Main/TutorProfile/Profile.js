@@ -155,17 +155,11 @@ const Profile = ({ setNotification }) => {
         headers: { token: localStorage.token },
       });
 
-      const blobRes = await response.blob();
+      const parseRes = await response.json();
 
-      // if (blobRes.type === "text/html") {
-      //   return setNotification({
-      //     open: true,
-      //     severity: "error",
-      //     message: "error",
-      //   });
-      // }
-
-      const file = new Blob([blobRes], { type: "application/pdf" });
+      const file = new Blob([new Uint8Array(parseRes.file.data)], {
+        type: "application/pdf",
+      });
 
       const fileURL = URL.createObjectURL(file);
 

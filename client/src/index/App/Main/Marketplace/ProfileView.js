@@ -86,7 +86,7 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
         headers: { token: localStorage.token },
       });
 
-      const blobRes = await response.blob();
+      const blobRes = await response.json();
 
       // if (blobRes.type === "text/html") {
       //   return setNotification({
@@ -96,7 +96,9 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
       //   });
       // }
 
-      const file = new Blob([blobRes], { type: "application/pdf" });
+      const file = new Blob([new Uint8Array(blobRes.file.data)], {
+        type: "application/pdf",
+      });
 
       const fileURL = URL.createObjectURL(file);
 
