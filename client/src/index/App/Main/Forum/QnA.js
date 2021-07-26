@@ -121,7 +121,6 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
   const answerQuestion = (answer, id) => async () => {
     setAnsDialogOpen({ open: false, question: "", id: "" });
 
-    console.log(id);
     try {
       const date = new Date().toISOString();
       const response = await fetch("/api/forum/qna/answer", {
