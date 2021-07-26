@@ -111,7 +111,6 @@ const Files = ({ userInformation, setNotification, forumid }) => {
 
       if (parseRes.status === true) {
         setFiles([{ ...parseRes.file, isowner: true }, ...files]);
-        console.log(files);
         setNotification({
           open: true,
           severity: "success",

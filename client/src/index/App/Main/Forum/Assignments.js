@@ -111,7 +111,6 @@ const Assignments = ({ userInformation, setNotification, forumid }) => {
 
       if (parseRes.status === true) {
         setFiles([{ ...parseRes.file, isowner: true }, ...files]);
-        console.log(files);
         setNotification({
           open: true,
           severity: "success",
@@ -263,7 +262,8 @@ const Assignments = ({ userInformation, setNotification, forumid }) => {
 
                     <div className={classes.buttons}>
                       <CardActions>
-                        {file.isowner && (
+                        {(userInformation.type !== "Student" ||
+                          file.isowner) && (
                           <Button
                             variant="contained"
                             style={{

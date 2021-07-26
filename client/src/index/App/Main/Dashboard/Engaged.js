@@ -50,8 +50,6 @@ const Engaged = ({ match, userInformation }) => {
 
       const parseRes = await response.json();
 
-      console.log(parseRes.forums);
-
       setForums(parseRes.forums);
     } catch (error) {
       console.error(error.message);
