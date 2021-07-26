@@ -195,38 +195,36 @@ const Assignments = ({ userInformation, setNotification, forumid }) => {
   return (
     <>
       <div>
-        {userInformation.type === "Tutor" ? (
-          <Box display="flex" m={3} justifyContent="center">
-            <ButtonGroup>
-              <Button
-                startIcon={<PublishIcon />}
-                variant="contained"
-                color="secondary"
-                component="label"
-                disabled={loadingFileUpload}
-                disableElevation
-              >
-                Select file
-                <input
-                  className={classes.upload}
-                  id="file-upload"
-                  type="file"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  hidden
-                />
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleFileUpload}
-                disabled={loadingFileUpload}
-              >
-                {loadingFileUpload ? "Uploading file..." : "Upload file"}
-              </Button>
-            </ButtonGroup>
-            {file && file.name}
-          </Box>
-        ) : null}
+        <Box display="flex" m={3} justifyContent="center">
+          <ButtonGroup>
+            <Button
+              startIcon={<PublishIcon />}
+              variant="contained"
+              color="secondary"
+              component="label"
+              disabled={loadingFileUpload}
+              disableElevation
+            >
+              Select file
+              <input
+                className={classes.upload}
+                id="file-upload"
+                type="file"
+                onChange={(e) => setFile(e.target.files[0])}
+                hidden
+              />
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleFileUpload}
+              disabled={loadingFileUpload}
+            >
+              {loadingFileUpload ? "Uploading file..." : "Upload file"}
+            </Button>
+          </ButtonGroup>
+          {file && file.name}
+        </Box>
 
         <div>
           {!loading ? (
