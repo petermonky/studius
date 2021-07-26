@@ -71,6 +71,7 @@ CREATE TABLE qna(
 CREATE TABLE assignments(
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     forumid uuid REFERENCES forums(id) ON DELETE CASCADE,
+    ownerid uuid NOT NULL,
     aws_name VARCHAR UNIQUE NOT NULL,
     date VARCHAR(500),
     filename VARCHAR UNIQUE NOT NULL,
