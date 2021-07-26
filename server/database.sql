@@ -69,22 +69,24 @@ CREATE TABLE qna(
 
 -- renamed to match credentials table for consistency 
 CREATE TABLE assignments(
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     forumid uuid REFERENCES forums(id) ON DELETE CASCADE,
-    datePosted VARCHAR(500),
+    aws_name VARCHAR UNIQUE NOT NULL,
+    date VARCHAR(500),
     filename VARCHAR UNIQUE NOT NULL,
-    filepath VARCHAR NOT NULL,
     mimetype VARCHAR NOT NULL,
-    size BIGINT NOT NULL,
-    file BYTEA
+    size BIGINT NOT NULL
 );
 
 CREATE TABLE files(
-    forumid uuid REFERENCES forums(id) ON DELETE CASCADE,  
-    datePosted VARCHAR(500), 
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    forumid uuid REFERENCES forums(id) ON DELETE CASCADE,
+    ownerid uuid NOT NULL,
+    aws_name VARCHAR UNIQUE NOT NULL,
+    date VARCHAR(500), 
     filename VARCHAR,
-    filepath VARCHAR,
     mimetype VARCHAR,
-    size BIGINT 
+    size BIGINT NOT NULL
 );
 
 --insert sample user
