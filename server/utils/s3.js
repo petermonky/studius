@@ -29,13 +29,13 @@ const uploadFile = (file) => {
 };
 
 // retrieve file from s3 bucket
-const getFileStream = (key) => {
+const getFile = (key) => {
   const retrieveParams = {
     Key: key,
     Bucket: bucketName,
   };
 
-  return s3.getObject(retrieveParams).createReadStream();
+  return s3.getObject(retrieveParams).promise();
 };
 
 // delete file from s3 bucket
@@ -48,4 +48,4 @@ const deleteFile = (key) => {
   return s3.deleteObject(deleteParams).promise();
 };
 
-module.exports = { uploadFile, getFileStream, deleteFile };
+module.exports = { uploadFile, getFile, deleteFile };
