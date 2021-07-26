@@ -5,8 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// POST into the forum table +
-// PUT update engaged in S/T table after confirmation
+// POST into the forum table
 router.post("/", authorisation, async (req, res) => {
   try {
     // destructure the req.body (OUID, subject)
@@ -26,34 +25,10 @@ router.post("/", authorisation, async (req, res) => {
         });
       }
 
-      // // do stuff in other tables
-      // const selfname = await pool.query(
-      //   "SELECT concat(firstname, ' ',lastname) AS name FROM tutors WHERE id=$1",
-      //   [req.user.id]
-      // );
-      // const OUname = await pool.query(
-      //   "SELECT concat(firstname, ' ',lastname) AS name FROM students WHERE id=$1",
-      //   [OUID]
-      // );
       await pool.query(
         "INSERT INTO forums (subject, tutor_name, student_name, tutor_id, student_id) VALUES ($1, $2, $3, $4, $5)",
         [subject, tutorName, studentName, req.user.id, OUID]
       );
-
-      // // update self table
-      // await pool.query(
-      //   "UPDATE tutors SET engaged = array_append(engaged, $1)  WHERE id = $2",
-      //   [[subject, OUID, OUname.rows[0].name, forumid.rows[0].id], req.user.id]
-      // );
-
-      // // update opposing user table
-      // await pool.query(
-      //   "UPDATE students SET engaged = array_append(engaged, $1)  WHERE id = $2",
-      //   [
-      //     [subject, req.user.id, selfname.rows[0].name, forumid.rows[0].id],
-      //     OUID,
-      //   ]
-      // );
     } else if (req.user.type === "Student") {
       const forum = await pool.query(
         "SELECT * FROM forums WHERE subject = $1 AND tutor_id = $2 AND student_id = $3",
@@ -67,32 +42,10 @@ router.post("/", authorisation, async (req, res) => {
         });
       }
 
-      // const selfname = await pool.query(
-      //   "SELECT concat(firstname,' ', lastname) AS name FROM students WHERE id=$1",
-      //   [req.user.id]
-      // );
-      // const OUname = await pool.query(
-      //   "SELECT concat(firstname,' ', lastname) AS name FROM tutors WHERE id=$1",
-      //   [OUID]
-      // );
-
       await pool.query(
         "INSERT INTO forums (subject, tutor_name, student_name, tutor_id, student_id) VALUES ($1, $2, $3, $4, $5)",
         [subject, tutorName, studentName, OUID, req.user.id]
       );
-
-      // await pool.query(
-      //   "UPDATE students SET engaged = array_append(engaged, $1) WHERE id = $2",
-      //   [[subject, OUID, OUname.rows[0].name, forumid.rows[0].id], req.user.id]
-      // );
-
-      // await pool.query(
-      //   "UPDATE tutors SET engaged = array_append(engaged, $1)  WHERE id = $2",
-      //   [
-      //     [subject, req.user.id, selfname.rows[0].name, forumid.rows[0].id],
-      //     OUID,
-      //   ]
-      // );
     }
 
     return res.json({
@@ -131,7 +84,6 @@ router.get("/id/:forumId", authorisation, async (req, res) => {
           OU_name: forum.rows[0].tutor_name,
         });
       }
-      return res.json(forum.rows[0]);
     }
 
     return res.status(404).json(false);
