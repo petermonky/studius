@@ -1,189 +1,302 @@
-import { useState, React, useEffect } from "react";
-import Button from "@material-ui/core/Button";
-import GetAppIcon from "@material-ui/icons/GetApp";
-import PublishIcon from "@material-ui/icons/Publish";
+import React, { useEffect, useState } from "react";
+import byteSize from "byte-size";
 import { makeStyles } from "@material-ui/core/styles";
-import Box from "@material-ui/core/Box";
+import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Typography from "@material-ui/core/Typography";
+import Box from "@material-ui/core/Box";
+import { Grid } from "@material-ui/core";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import Loading from "../../../shared/Loading";
+import PublishIcon from "@material-ui/icons/Publish";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+  card: {
+    minWidth: 275,
+    marginTop: theme.spacing(2),
+  },
+  noData: {
+    marginTop: theme.spacing(40),
+  },
+  bullet: {
+    display: "inline-block",
+    margin: "0 2px",
+    transform: "scale(0.8)",
+  },
+  buttons: {
+    display: "flex",
+    justifyContent: "flex-end",
+    padding: theme.spacing(1),
+  },
+  title: {
+    buttons: {
+      display: "flex",
+      justifyContent: "flex-end",
+    },
+    fontSize: 14,
+  },
+  date: {
+    fontSize: 12,
+    paddingTop: "10px",
+  },
+  footer: {
+    fontSize: 16,
+    paddingTop: "5px",
+  },
   upload: {
     display: "none",
   },
-});
+}));
 
-const Assignments = ({ match, setNotification, forumid }) => {
+const Assignments = ({ userInformation, setNotification, forumid }) => {
   const classes = useStyles();
-  const [fileData, setFileData] = useState();
 
-  const date = new Date();
-  const dateObj =
-    date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
+  dayjs.extend(relativeTime);
 
-  const fileChangeHandler = (event) => {
-    setFileData(event.target.files[0]);
-  };
+  const [loading, setLoading] = useState(true);
+  const [loadingFileUpload, setLoadingFileUpload] = useState(false);
 
-  // both
-  const uploadFile = async (event) => {
-    const file = new FormData();
-    file.append("forumid", forumid);
-    file.append("date", dateObj);
-    file.append("file", fileData);
-    event.preventDefault();
+  const [files, setFiles] = useState([]);
+  const [file, setFile] = useState(null);
+
+  const getFiles = async () => {
     try {
-      console.log(fileData);
-      const response = await fetch("/api/forum/assignment", {
-        method: "POST",
-        headers: {
-          token: localStorage.token,
-        },
-        body: file,
+      setLoading(true);
+
+      const response = await fetch("/api/files/assignments", {
+        method: "GET",
+        headers: { token: localStorage.token, forumid },
       });
 
       const parseRes = await response.json();
 
-      if (parseRes === true) {
+      setFiles([...parseRes]);
+    } catch (error) {
+      console.error(error.message);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    getFiles();
+  }, []);
+
+  const handleFileUpload = async () => {
+    try {
+      setLoadingFileUpload(true);
+
+      if (!file) {
+        setNotification({
+          open: true,
+          severity: "error",
+          message: "No file selected!",
+        });
+        return setLoadingFileUpload(false);
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/files/assignments", {
+        method: "POST",
+        headers: { token: localStorage.token, forumid },
+        body: formData,
+      });
+
+      const parseRes = await response.json();
+
+      if (parseRes.status === true) {
+        setFiles([{ ...parseRes.file, isowner: true }, ...files]);
+        console.log(files);
         setNotification({
           open: true,
           severity: "success",
-          message: `File uploaded`, // applicable for both students/tutors
+          message: parseRes.message,
         });
       } else {
         setNotification({
           open: true,
           severity: "error",
-          message: parseRes,
+          message: parseRes.message,
         });
       }
-      window.location.reload();
+
+      setFile(null);
+      return setLoadingFileUpload(false);
     } catch (error) {
-      console.error(error.message);
+      console.error(error);
     }
   };
 
-  const files =
-    window.files === undefined ? [] : window.files === null ? [] : window.files;
+  const handleFileView = async (key) => {
+    try {
+      if (!key) {
+        return setNotification({
+          open: true,
+          severity: "error",
+          message: "No file!",
+        });
+      }
+
+      const response = await fetch(`/api/files/assignments/${key}`, {
+        method: "GET",
+        headers: { token: localStorage.token },
+      });
+
+      const parseRes = await response.json();
+
+      const file = new Blob([new Uint8Array(parseRes.file.data)], {
+        type: parseRes.fileType,
+      });
+
+      const fileURL = URL.createObjectURL(file);
+
+      return window.open(fileURL);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleFileRemove = async (key) => {
+    try {
+      const response = await fetch(`/api/files/assignments/${key}`, {
+        method: "DELETE",
+        headers: { token: localStorage.token },
+      });
+
+      const parseRes = await response.json();
+
+      if (parseRes.status === true) {
+        setFiles(files.filter((file) => file.aws_name !== key));
+        setNotification({
+          open: true,
+          severity: "success",
+          message: parseRes.message,
+        });
+      } else {
+        setNotification({
+          open: true,
+          severity: "error",
+          message: parseRes.message,
+        });
+      }
+    } catch (error) {
+      setNotification({
+        open: true,
+        severity: "error",
+        message: error,
+      });
+    }
+  };
 
   return (
     <>
-      <Box display="flex" m={3} justifyContent="center">
-        <input
-          className={classes.upload}
-          id="upload"
-          type="file"
-          onChange={fileChangeHandler}
-        />
-        <label htmlFor="upload">
-          <Button variant="contained" color="secondary" component="span">
-            <PublishIcon />
-            Select File
-          </Button>
-        </label>
-        <Box component="span" m={1}>
-          {fileData === undefined ? null : fileData.name}
-        </Box>
-        <br />
-        <br />
-        <form encType="multipart/form-data">
-          <Button
-            type="submit"
-            variant="outlined"
-            color="primary"
-            onClick={uploadFile}
-          >
-            Upload File
-          </Button>
-        </form>
-      </Box>
-      <br />
-
       <div>
-        {files.length === 0 ? (
-          <Box display="flex" justifyContent="center" alignItems="center">
-            <Typography variant="h4"> No assignments yet!</Typography>
+        {userInformation.type === "Tutor" ? (
+          <Box display="flex" m={3} justifyContent="center">
+            <ButtonGroup>
+              <Button
+                startIcon={<PublishIcon />}
+                variant="contained"
+                color="secondary"
+                component="label"
+                disabled={loadingFileUpload}
+                disableElevation
+              >
+                Select file
+                <input
+                  className={classes.upload}
+                  id="file-upload"
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  hidden
+                />
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleFileUpload}
+                disabled={loadingFileUpload}
+              >
+                {loadingFileUpload ? "Uploading file..." : "Upload file"}
+              </Button>
+            </ButtonGroup>
+            {file && file.name}
           </Box>
         ) : null}
+
+        <div>
+          {!loading ? (
+            files.length === 0 ? (
+              <Box display="flex" justifyContent="center" m={2}>
+                <Typography variant="h4"> No files yet!</Typography>
+              </Box>
+            ) : (
+              files.map((file) => (
+                <div key={file.id}>
+                  <Card className={classes.card} variant="elevation">
+                    <CardContent>
+                      <Typography
+                        className={classes.title}
+                        color="textSecondary"
+                        gutterBottom
+                      >
+                        {`${dayjs(file.date).format("DD/MM/YYYY")} (${dayjs(
+                          file.date
+                        ).fromNow()})`}
+                      </Typography>
+
+                      <Grid container wrap="nowrap" spacing={0}>
+                        <Typography variant="h6" component="h2">
+                          {file.filename}
+                        </Typography>
+                      </Grid>
+
+                      <Typography color="textSecondary">
+                        {`${byteSize(file.size)}`}
+                      </Typography>
+                    </CardContent>
+
+                    <div className={classes.buttons}>
+                      <CardActions>
+                        {file.isowner && (
+                          <Button
+                            variant="contained"
+                            style={{
+                              backgroundColor: "#CC0000",
+                              color: "white",
+                            }}
+                            onClick={() => handleFileRemove(file.aws_name)}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                        <Button
+                          variant="contained"
+                          colour="primary"
+                          onClick={() => handleFileView(file.aws_name)}
+                        >
+                          View
+                        </Button>
+                      </CardActions>
+                    </div>
+                  </Card>
+                </div>
+              ))
+            )
+          ) : (
+            <div className={classes.noData}>
+              <Loading />
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
 };
 
 export default Assignments;
-
-/*
-
-// unworkables 
-  // both
-  const displayFiles = async () => { // both assgn and subsn
-    try {
-      const response = await fetch("http://localhost:3000/forum/assignments", {
-        method: "POST",
-        headers: {
-          token: localStorage.token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ forumid: forumid }),
-      });
-
-      const parseRes = await response.json();
-      console.log(parseRes);
-      window.files = parseRes;
-    } catch (error) {
-      console.error(error.message);
-    }
-  };
-
-  useEffect(() => {
-    displayFiles();
-  }, []);
-
-  const files =
-    window.files === undefined ? [] : window.files === null ? [] : window.files;
-
-    console.log(files)
-
-  //tutor only
-  const deleteFile = async () => {};
-
-  // both
-  const downloadFile = async () => {};
-
-
-
-return (
-    <>
-      <Header title="File downloader with progress bar" />
-
-      <ExternalInfo page="fileDownloader" />
-
-      <div className="row">
-        <div className="text-center col">
-          <h2>File Downloader with progress bar in react</h2>
-          <div className="mt-3 row">
-            {files.map((file, idx) => (
-              <div className="col" key={idx}>
-                <div className="card ">
-                  <div className="card-body" key={idx}>
-                    <img className="mb-3 card-img-top" src={file.thumb} />
-                    <h5 className="card-title">{file.name}</h5>
-
-                    <a
-                      className="text-white cursor-pointer btn btn-primary"
-                      onClick={() => download(file)}
-                    >
-                      Download <GetAppIcon />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        {downloaderComponentUI}
-      </div>
-    </>
-  );
-};
-
-*/
