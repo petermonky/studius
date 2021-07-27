@@ -74,7 +74,7 @@ const Files = ({ userInformation, setNotification, forumid }) => {
 
       const parseRes = await response.json();
 
-      setFiles([...parseRes]);
+      setFiles(parseRes.map((file) => ({ ...file, loading: false })));
     } catch (error) {
       console.error(error.message);
     }
@@ -132,6 +132,12 @@ const Files = ({ userInformation, setNotification, forumid }) => {
   };
 
   const handleFileView = async (key) => {
+    setFiles(
+      files.map((file) =>
+        file.aws_name === key ? { ...file, loading: true } : file
+      )
+    );
+
     try {
       if (!key) {
         return setNotification({
@@ -154,13 +160,25 @@ const Files = ({ userInformation, setNotification, forumid }) => {
 
       const fileURL = URL.createObjectURL(file);
 
-      return window.open(fileURL);
+      window.open(fileURL);
     } catch (error) {
       console.error(error);
     }
+
+    return setFiles(
+      files.map((file) =>
+        file.aws_name === key ? { ...file, loading: false } : file
+      )
+    );
   };
 
   const handleFileRemove = async (key) => {
+    setFiles(
+      files.map((file) =>
+        file.aws_name === key ? { ...file, loading: true } : file
+      )
+    );
+
     try {
       const response = await fetch(`/api/files/files/${key}`, {
         method: "DELETE",
@@ -171,7 +189,7 @@ const Files = ({ userInformation, setNotification, forumid }) => {
 
       if (parseRes.status === true) {
         setFiles(files.filter((file) => file.aws_name !== key));
-        setNotification({
+        return setNotification({
           open: true,
           severity: "success",
           message: parseRes.message,
@@ -190,6 +208,11 @@ const Files = ({ userInformation, setNotification, forumid }) => {
         message: error,
       });
     }
+    setFiles(
+      files.map((file) =>
+        file.aws_name === key ? { ...file, loading: false } : file
+      )
+    );
   };
 
   return (
@@ -211,7 +234,10 @@ const Files = ({ userInformation, setNotification, forumid }) => {
                   className={classes.upload}
                   id="file-upload"
                   type="file"
-                  onChange={(e) => setFile(e.target.files[0])}
+                  onChange={(e) => {
+                    setFile(e.target.files[0]);
+                    e.target.value = null;
+                  }}
                   hidden
                 />
               </Button>
@@ -265,11 +291,16 @@ const Files = ({ userInformation, setNotification, forumid }) => {
                         {file.isowner && (
                           <Button
                             variant="contained"
-                            style={{
-                              backgroundColor: "#CC0000",
-                              color: "white",
-                            }}
+                            style={
+                              file.loading
+                                ? undefined
+                                : {
+                                    backgroundColor: "#d11a2a",
+                                    color: "white",
+                                  }
+                            }
                             onClick={() => handleFileRemove(file.aws_name)}
+                            disabled={file.loading}
                           >
                             Delete
                           </Button>
@@ -278,6 +309,7 @@ const Files = ({ userInformation, setNotification, forumid }) => {
                           variant="contained"
                           colour="primary"
                           onClick={() => handleFileView(file.aws_name)}
+                          disabled={file.loading}
                         >
                           View
                         </Button>

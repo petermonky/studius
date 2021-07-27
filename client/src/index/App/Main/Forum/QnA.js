@@ -233,6 +233,7 @@ const QnA = ({ userInformation, setNotification, forumid }) => {
                   variant="contained"
                   color="secondary"
                   onClick={handleClickOpen}
+                  disableElevation
                 >
                   + Ask a question
                 </Button>
