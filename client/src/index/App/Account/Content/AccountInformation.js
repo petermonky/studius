@@ -29,7 +29,7 @@ const AccountInformation = ({
 
   return (
     <>
-      <Typography variant="h4" className={classes.title}>
+      <Typography variant="h4" className={classes.title} noWrap>
         Account information
       </Typography>
       {!loading ? (
