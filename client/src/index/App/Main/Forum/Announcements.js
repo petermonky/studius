@@ -23,11 +23,6 @@ const useStyles = makeStyles((theme) => ({
   noData: {
     marginTop: theme.spacing(40),
   },
-  bullet: {
-    display: "inline-block",
-    margin: "0 2px",
-    transform: "scale(0.8)",
-  },
   title: {
     fontSize: 14,
   },
@@ -215,6 +210,7 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
                 variant="contained"
                 color="secondary"
                 onClick={handleClickOpen}
+                disableElevation
               >
                 + Add Annoucement
               </Button>
