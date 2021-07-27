@@ -9,7 +9,23 @@ const pool = require("../db");
 
 const { uploadFile, getFile, deleteFile } = require("../utils/s3");
 
-const upload = multer({ dest: os.tmpdir() });
+const uploader = (field) => (req, res, next) => {
+  const upload = multer({
+    dest: os.tmpdir(),
+    limits: { fileSize: 10000000 },
+  }).single(field);
+
+  upload(req, res, (err) => {
+    if (err && err.code === "LIMIT_FILE_SIZE") {
+      res.status(400).json({
+        status: false,
+        message: "File size too big!",
+      });
+      return console.error(err);
+    }
+    next();
+  });
+};
 
 router.get("/credentials", authorisation, async (req, res) => {
   try {
@@ -46,7 +62,7 @@ router.get("/credentials/:key", authorisation, async (req, res) => {
 
 router.post(
   "/credentials",
-  [authorisation, credentials, upload.single("credentials")],
+  [authorisation, credentials, uploader("credentials")],
   async (req, res) => {
     try {
       if (req.file.mimetype !== "application/pdf") {
@@ -150,7 +166,7 @@ router.get("/files/:key", authorisation, async (req, res) => {
 
 router.post(
   "/files",
-  [authorisation, files, upload.single("file")],
+  [authorisation, files, uploader("file")],
   async (req, res) => {
     try {
       const result = await uploadFile(req.file);
@@ -241,7 +257,7 @@ router.get("/assignments/:key", authorisation, async (req, res) => {
 
 router.post(
   "/assignments",
-  [authorisation, assignments, upload.single("file")],
+  [authorisation, assignments, uploader("file")],
   async (req, res) => {
     try {
       const result = await uploadFile(req.file);
