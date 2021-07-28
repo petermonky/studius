@@ -85,8 +85,8 @@ CREATE TABLE files(
     ownerid uuid NOT NULL,
     aws_name VARCHAR UNIQUE NOT NULL,
     date VARCHAR(500), 
-    filename VARCHAR,
-    mimetype VARCHAR,
+    filename VARCHAR UNIQUE NOT NULL,
+    mimetype VARCHAR NOT NULL,
     size BIGINT NOT NULL
 );
 

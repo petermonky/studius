@@ -150,12 +150,13 @@ router.get("/files/:key", authorisation, async (req, res) => {
   try {
     const { key } = req.params;
     // const readStream = getFileStream(key);
-    const file = await getFile(key);
 
     const fileType = await pool.query(
       "SELECT mimetype FROM files WHERE aws_name = $1",
       [key]
     );
+
+    const file = await getFile(key);
 
     // readStream.pipe(res);
     return res.json({ file: file.Body, fileType: fileType.rows[0].mimetype });
@@ -169,6 +170,18 @@ router.post(
   [authorisation, files, uploader("file")],
   async (req, res) => {
     try {
+      const fileRetrieve = await pool.query(
+        "SELECT * FROM files WHERE filename = $1",
+        [req.file.originalname]
+      );
+
+      if (fileRetrieve.rows.length > 0) {
+        return res.json({
+          status: false,
+          message: "Duplicate file name!",
+        });
+      }
+
       const result = await uploadFile(req.file);
 
       const file = await pool.query(
@@ -200,8 +213,6 @@ router.delete("/files/:key", [authorisation, files], async (req, res) => {
   try {
     const { key } = req.user;
 
-    await deleteFile(key);
-
     const fileDelete = await pool.query(
       "DELETE FROM files WHERE aws_name = $1 RETURNING *",
       [key]
@@ -210,6 +221,8 @@ router.delete("/files/:key", [authorisation, files], async (req, res) => {
     if (fileDelete.rows.length === 0) {
       return res.json({ status: false, message: "Delete failed!" });
     }
+
+    await deleteFile(key);
 
     res.json({ status: true, message: "Delete successful!" });
   } catch (error) {
@@ -260,6 +273,18 @@ router.post(
   [authorisation, assignments, uploader("file")],
   async (req, res) => {
     try {
+      const fileRetrieve = await pool.query(
+        "SELECT * FROM assignments WHERE filename = $1",
+        [req.file.originalname]
+      );
+
+      if (fileRetrieve.rows.length > 0) {
+        return res.json({
+          status: false,
+          message: "Duplicate file name!",
+        });
+      }
+
       const result = await uploadFile(req.file);
 
       const file = await pool.query(
@@ -294,8 +319,6 @@ router.delete(
     try {
       const { key } = req.user;
 
-      await deleteFile(key);
-
       const fileDelete = await pool.query(
         "DELETE FROM assignments WHERE aws_name = $1 RETURNING *",
         [key]
@@ -304,6 +327,8 @@ router.delete(
       if (fileDelete.rows.length === 0) {
         return res.json({ status: false, message: "Delete failed!" });
       }
+
+      await deleteFile(key);
 
       res.json({ status: true, message: "Delete successful!" });
     } catch (error) {
