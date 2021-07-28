@@ -16,6 +16,7 @@ import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import moment from "moment";
 import { makeStyles } from "@material-ui/core/styles";
+import Loading from "../../../shared/Loading";
 
 const useStyles = makeStyles((theme) => ({
   layout: {
@@ -63,7 +64,8 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
 
   const classes = useStyles();
 
-  const [loadingCredentials, setLoadingCredentials] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadingCredentials, setLoadingCredentials] = useState(false);
 
   const [profile, setProfile] = useState({
     isSet: false,
@@ -112,7 +114,7 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
 
   const getProfile = async () => {
     try {
-      setLoadingCredentials(true);
+      setLoading(true);
 
       const responseProfile = await fetch(`/api/marketplace/${id}`, {
         method: "GET",
@@ -132,7 +134,7 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
 
       const { key } = parseRes;
 
-      setLoadingCredentials(false);
+      setLoading(false);
       return setCredentialsKey(key);
     } catch (error) {}
   };
@@ -276,79 +278,87 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
     <>
       <main className={classes.layout}>
         <Paper className={classes.paper}>
-          <Typography className={classes.title} variant="h4" align="center">
-            {`${profile.firstname} ${profile.lastname} `}
-          </Typography>
-          <Grid container spacing={2} justify="center" direction="column">
-            <Grid item xs={12}>
-              <Typography variant="h6">Subjects</Typography>
-              <Typography>
-                {profile.subjects
-                  .map((subject) =>
-                    Array.isArray(subject) ? subject.join(" ") : subject
-                  )
-                  .join(", ")}
+          {!loading ? (
+            <>
+              <Typography className={classes.title} variant="h4" align="center">
+                {`${profile.firstname} ${profile.lastname} `}
               </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6">Rate</Typography>
-              <Typography>$ {profile.rate} / hr</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6">Available times</Typography>
-              <Typography>
-                {`${moment(profile.times[0], "HH:mm").format(
-                  "hh:mm A"
-                )} — ${moment(profile.times[1], "HH:mm").format("hh:mm A")}`}
-              </Typography>
-            </Grid>
-            {userInformation.type === "Student" ? (
-              <Grid item xs={12}>
-                <Typography variant="h6">Education</Typography>
-                <Typography>{profile.education}</Typography>
+              <Grid container spacing={2} justify="center" direction="column">
+                <Grid item xs={12}>
+                  <Typography variant="h6">Subjects</Typography>
+                  <Typography>
+                    {profile.subjects
+                      .map((subject) =>
+                        Array.isArray(subject) ? subject.join(" ") : subject
+                      )
+                      .join(", ")}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="h6">Rate</Typography>
+                  <Typography>$ {profile.rate} / hr</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="h6">Available times</Typography>
+                  <Typography>
+                    {`${moment(profile.times[0], "HH:mm").format(
+                      "hh:mm A"
+                    )} — ${moment(profile.times[1], "HH:mm").format(
+                      "hh:mm A"
+                    )}`}
+                  </Typography>
+                </Grid>
+                {userInformation.type === "Student" ? (
+                  <Grid item xs={12}>
+                    <Typography variant="h6">Education</Typography>
+                    <Typography>{profile.education}</Typography>
+                  </Grid>
+                ) : null}
+                <Grid item xs={12}>
+                  <Typography variant="h6">Description</Typography>
+                  <Typography style={{ whiteSpace: "pre-line" }}>
+                    {profile.description}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}></Grid>
               </Grid>
-            ) : null}
-            <Grid item xs={12}>
-              <Typography variant="h6">Description</Typography>
-              <Typography style={{ whiteSpace: "pre-line" }}>
-                {profile.description}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}></Grid>
-          </Grid>
-          <div className={classes.buttons}>
-            {userInformation.type === "Student" ? (
-              <Button
-                variant="outlined"
-                color="primary"
-                className={classes.button}
-                onClick={handleViewCredentials}
-                disabled={!credentialsKey || loadingCredentials}
-              >
-                {loadingCredentials
-                  ? "Loading..."
-                  : credentialsKey
-                  ? "View credentials"
-                  : "No credentials"}
-              </Button>
-            ) : null}
-            <Button
-              color="secondary"
-              className={classes.button}
-              component={Link}
-              to={"/main/marketplace"}
-            >
-              Back
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.button}
-              onClick={handleContractOpen}
-            >
-              Send contract
-            </Button>
-          </div>
+              <div className={classes.buttons}>
+                {userInformation.type === "Student" ? (
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    className={classes.button}
+                    onClick={handleViewCredentials}
+                    disabled={!credentialsKey || loadingCredentials}
+                  >
+                    {loadingCredentials
+                      ? "Loading..."
+                      : credentialsKey
+                      ? "View credentials"
+                      : "No credentials"}
+                  </Button>
+                ) : null}
+                <Button
+                  color="secondary"
+                  className={classes.button}
+                  component={Link}
+                  to={"/main/marketplace"}
+                >
+                  Back
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className={classes.button}
+                  onClick={handleContractOpen}
+                >
+                  Send contract
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Loading />
+          )}
         </Paper>
       </main>
       <Contract />
