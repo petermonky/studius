@@ -160,7 +160,7 @@ const Assignments = ({ userInformation, setNotification, forumid }) => {
 
       const fileURL = URL.createObjectURL(file);
 
-      return window.open(fileURL);
+      window.open(fileURL);
     } catch (error) {
       console.error(error);
     }
