@@ -8,7 +8,7 @@ const pool = new Pool({
   port: 5432,
   database: process.env.PG_DATABASE,
   ssl:
-    process.env.PG_HOST === "localhost"
+    process.env.PG_HOST !== "localhost"
       ? { rejectUnauthorized: false }
       : undefined,
 });
