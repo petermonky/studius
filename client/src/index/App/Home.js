@@ -131,7 +131,7 @@ const Home = () => {
           color="textPrimary"
           gutterBottom
         >
-          Study with us!
+          Study with Us!
         </Typography>
         <Typography
           variant="h5"
@@ -139,7 +139,8 @@ const Home = () => {
           color="textSecondary"
           component="p"
         >
-          Studius moment :O
+          Welcome to the Studius live demo! Feel free to poke around the
+          application.
         </Typography>
       </Container>
 
