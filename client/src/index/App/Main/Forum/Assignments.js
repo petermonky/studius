@@ -233,7 +233,10 @@ const Assignments = ({ userInformation, setNotification, forumid }) => {
                 className={classes.upload}
                 id="file-upload"
                 type="file"
-                onChange={(e) => setFile(e.target.files[0])}
+                onChange={(e) => {
+                  setFile(e.target.files[0]);
+                  e.target.value = null;
+                }}
                 hidden
               />
             </Button>
