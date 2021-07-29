@@ -31,3 +31,7 @@ Edit the user credentials in `/server/db.js` to match that of the local PostgreS
 ### Starting server and client
 
 Run `yarn start` in both `/server` and `/client` to boot up server and client (duh). Confirm connection to client via `http://localhost:4000/` in a modern web browser.
+
+### Notes
+
+This repository is separate from the original codebase in that it contains further developments pertinent to new features and deployment. Refer to the [original repository](https://github.com/MinErn-Chen/Studius) for full development history.
