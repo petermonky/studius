@@ -217,7 +217,7 @@ const ProfileView = ({ userInformation, setNotification, history }) => {
   const Contract = () => {
     return (
       <Dialog open={contractOpen} maxWidth="xs" fullWidth>
-        <DialogTitle id="contract-title">Test</DialogTitle>
+        <DialogTitle id="contract-title">Tuition Contract</DialogTitle>
         <DialogContent>
           <FormControl variant="outlined" fullWidth required>
             <InputLabel id="subject">Subject</InputLabel>
