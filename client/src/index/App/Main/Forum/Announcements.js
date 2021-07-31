@@ -15,6 +15,7 @@ import { Grid } from "@material-ui/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Loading from "../../../shared/Loading";
+import Refresh from "./Refresh";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -218,6 +219,10 @@ const Annoucements = ({ userInformation, setNotification, forumid }) => {
             {anncDialog}
           </div>
         ) : null}
+      </div>
+
+      <div>
+        <Refresh loading={loading} click={displayAnnoucements} />
       </div>
 
       <div>

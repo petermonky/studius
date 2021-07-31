@@ -12,6 +12,7 @@ import { Grid } from "@material-ui/core";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Loading from "../../../shared/Loading";
+import Refresh from "./Refresh";
 import PublishIcon from "@material-ui/icons/Publish";
 
 const useStyles = makeStyles((theme) => ({
@@ -251,6 +252,10 @@ const Assignments = ({ userInformation, setNotification, forumid }) => {
           </ButtonGroup>
           {file && file.name}
         </Box>
+
+        <div>
+          <Refresh loading={loading} click={getFiles} />
+        </div>
 
         <div>
           {!loading ? (
