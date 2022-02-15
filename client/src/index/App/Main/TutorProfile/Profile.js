@@ -6,7 +6,7 @@ import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
-// import Autocomplete from "@material-ui/lab/Autocomplete";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -16,6 +16,8 @@ import RemoveIcon from "@material-ui/icons/Remove";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { TimePicker } from "@material-ui/pickers";
 import moment from "moment";
+
+import subjects from "../data/subjects";
 
 const useStyles = makeStyles((theme) => ({
   layout: {
@@ -262,6 +264,13 @@ const Profile = ({ setNotification }) => {
     });
   };
 
+  const handleInputSubjects = (index) => (event, newInputValue) => {
+    setInputs({
+      ...inputs,
+      inputSubjects: { ...inputs.subjects, [index]: newInputValue },
+    });
+  };
+
   const handleAdd = () => {
     setInputs({
       ...inputs,
@@ -301,6 +310,7 @@ const Profile = ({ setNotification }) => {
   const handleReset = () => {
     setInputs({
       subjects: { 0: "" },
+      inputSubjects: { 0: "" },
       rate: "",
       fromTime: moment("00:00", "HH:mm"),
       toTime: moment("00:00", "HH:mm"),
@@ -315,6 +325,7 @@ const Profile = ({ setNotification }) => {
 
     const {
       subjects,
+      inputSubjects,
       rate,
       fromTime,
       toTime,
@@ -325,6 +336,7 @@ const Profile = ({ setNotification }) => {
 
     const body = {
       subjects: Object.values(subjects),
+      inputSubjects: Object.values(inputSubjects),
       rate: rate,
       times: [fromTime.format("HH:mm"), toTime.format("HH:mm")],
       education: institution,
@@ -382,29 +394,43 @@ const Profile = ({ setNotification }) => {
             {Object.keys(inputs.subjects).map((subject, index) => {
               return Object.keys(inputs.subjects).length === 1 ? (
                 <Grid item xs={12} key={`subject-${index}`}>
-                  <TextField
-                    required
+                  <Autocomplete
                     id={`subject-${index}`}
-                    label={`Subject`}
-                    variant="outlined"
+                    options={subjects}
+                    fullWidth
+                    required
                     name={index}
                     onChange={handleSubjects}
+                    onInputChange={handleInputSubjects}
                     value={inputs.subjects[subject]}
-                    fullWidth
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Subject"
+                        variant="outlined"
+                      />
+                    )}
                   />
                 </Grid>
               ) : (
                 <>
                   <Grid item xs={11} key={`subject-${index}`}>
-                    <TextField
-                      required
+                    <Autocomplete
                       id={`subject-${index}`}
-                      label={`Subject`}
-                      variant="outlined"
+                      options={subjects}
+                      fullWidth
+                      required
                       name={index}
                       onChange={handleSubjects}
+                      onInputChange={handleInputSubjects(index)}
                       value={inputs.subjects[subject]}
-                      fullWidth
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Subject"
+                          variant="outlined"
+                        />
+                      )}
                     />
                   </Grid>
                   <Grid item xs={1} key={`remove-${index}`}>

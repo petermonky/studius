@@ -19,5 +19,6 @@
   "scripts": {
     "dev": "nodemon index",
     "start": "node index"
-  }
+  },
+  "devDependencies": {}
 }
