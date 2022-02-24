@@ -10,7 +10,7 @@ The following steps detail how to setup the development environment for the web 
 
 Clone this repository,
 
-    $ git clone https://github.com/MinErn-Chen/Studius.git
+    $ git clone https://github.com/petermonky/studius.git
     $ cd studius
 
 and install the necessary dependencies for both server and client,
